@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 
 const ai = new GoogleGenAI({
-  apiKey: process.env.GOOGLE_AI_API_KEY || process.env.GEMINI_API_KEY,
+  apiKey: process.env.GOOGLE_AI_API_KEY,
 });
 
 export async function POST(req: NextRequest) {
@@ -90,41 +90,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // --- STAGE 2: ARTIST DELEGATION ---
     const artistPrompt = fs.readFileSync(path.join(process.cwd(), 'prompts', 'artist.txt'), 'utf8');
     let fullArtistPrompt = actionPrompt 
       ? `${artistPrompt}\n\nUSER INPUT: "${actionPrompt}"`
       : artistPrompt;
-
-    // --- OPTIONAL: TOKEN COMPRESSION (Token Company) ---
-    if (process.env.TOKEN_C_API_KEY) {
-      try {
-        const compressResponse = await fetch('https://api.thetokencompany.com/v1/compress', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.TOKEN_C_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            input: fullArtistPrompt,
-            model: "bear-1",
-            compression_settings: {
-              aggressiveness: 0.5,
-            },
-          }),
-        });
-
-        if (compressResponse.ok) {
-          const compressData = await compressResponse.json();
-          if (compressData.output) {
-            solutionLogger.info({ requestId, originalLength: fullArtistPrompt.length, compressedLength: compressData.output.length }, 'Prompt compressed via Token Company');
-            fullArtistPrompt = compressData.output;
-          }
-        }
-      } catch (compressErr) {
-        solutionLogger.error({ requestId, compressErr }, 'Token Company compression failed, falling back to original prompt');
-      }
-    }
 
     const artistParts: any[] = [
       { text: fullArtistPrompt },

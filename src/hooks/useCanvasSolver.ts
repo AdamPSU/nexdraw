@@ -314,6 +314,16 @@ export function useCanvasSolver(
     [editor]
   );
 
+  const cancelGeneration = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+      setStatus("idle");
+      setStatusMessage("");
+      isProcessingRef.current = false;
+    }
+  }, []);
+
   return {
     pendingImageIds,
     status,
@@ -324,6 +334,7 @@ export function useCanvasSolver(
     generateSolution,
     handleAccept,
     handleReject,
+    cancelGeneration,
     isUpdatingImageRef, // Needed for useBoardSync
   };
 }

@@ -106,6 +106,7 @@ export function BoardContent({
     generateSolution,
     handleAccept,
     handleReject,
+    cancelGeneration,
     isUpdatingImageRef,
   } = useCanvasSolver(
     isVoiceSessionActive,
@@ -128,6 +129,13 @@ export function BoardContent({
   });
 
   useBoardSync(id, isUpdatingImageRef);
+
+  // Cancel any ongoing AI generation when the chat sidebar is opened
+  useEffect(() => {
+    if (isChatOpen) {
+      cancelGeneration();
+    }
+  }, [isChatOpen, cancelGeneration]);
 
   // Helper to suppress AI triggering during layer operations
   const wrapLayerAction = <T extends (...args: any[]) => any>(action: T) => {
