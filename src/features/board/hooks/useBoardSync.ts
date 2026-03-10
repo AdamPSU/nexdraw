@@ -34,7 +34,7 @@ export function useBoardSync(id: string, isUpdatingImageRef: RefObject<boolean>)
             logger.error({ error: String(e), id }, "Failed to serialize board snapshot for auto-save");
             return;
           }
-          
+
           let previewUrl = null;
           try {
             const shapeIds = editor.getCurrentPageShapeIds();
@@ -46,7 +46,7 @@ export function useBoardSync(id: string, isUpdatingImageRef: RefObject<boolean>)
                 background: false,
                 scale: 0.5,
               });
-              
+
               if (blob) {
                 previewUrl = await new Promise<string>((resolve) => {
                   const reader = new FileReader();
@@ -59,7 +59,7 @@ export function useBoardSync(id: string, isUpdatingImageRef: RefObject<boolean>)
             logger.warn({ error: String(e), id }, "Thumbnail generation failed, continuing without preview");
           }
 
-          const updateData: any = { 
+          const updateData: any = {
             data: safeSnapshot,
             updated_at: new Date().toISOString()
           };
@@ -86,7 +86,7 @@ export function useBoardSync(id: string, isUpdatingImageRef: RefObject<boolean>)
             }
             throw error;
           }
-          
+
           logger.info({ id }, "Board auto-saved successfully");
         } catch (error) {
           logger.error({ error, id }, "Error auto-saving board");
@@ -105,4 +105,3 @@ export function useBoardSync(id: string, isUpdatingImageRef: RefObject<boolean>)
     };
   }, [editor, id, isUpdatingImageRef]);
 }
-

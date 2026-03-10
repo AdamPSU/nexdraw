@@ -23,7 +23,7 @@ import { supabase } from "@/lib/supabase";
 import { useParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { BoardContent } from "./BoardContent";
+import { BoardContent } from "@/features/board/components/BoardContent";
 
 // Ensure the tldraw canvas background is pure white in both light and dark modes
 DefaultColorThemePalette.lightMode.background = "#FFFFFF";

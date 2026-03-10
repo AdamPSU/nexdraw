@@ -1,41 +1,30 @@
 import { useCallback, useState, useRef, useEffect } from "react";
-import { 
-  useEditor, 
-  TLShapeId, 
-  createShapeId, 
-  AssetRecordType 
+import {
+  useEditor,
+  TLShapeId,
+  createShapeId,
+  AssetRecordType
 } from "tldraw";
 import { logger } from "@/lib/logger";
-import { useDebounceActivity } from "@/hooks/useDebounceActivity";
-import { StatusIndicatorState } from "@/components/StatusIndicator";
-import { removeWhiteBackground } from "@/utils/imageProcessing";
-import { Layer } from "@/hooks/useLayers";
+import { useDebounceActivity } from "@/features/board/hooks/useDebounceActivity";
+import { StatusIndicatorState } from "@/features/ai/components/StatusIndicator";
+import { removeWhiteBackground } from "@/utils/image-processing";
 
-export function useCanvasSolver(
-  isVoiceSessionActive: boolean,
-  findOrCreateLayer?: (name: string) => string,
-  activeLayerId?: string,
-  layers: Layer[] = [],
-  assignShapeToLayer?: (shapeId: TLShapeId, layerId: string) => void,
-  getLayerIdForShape?: (shapeId: TLShapeId) => string | null
-) {
+export function useCanvasSolver(isVoiceSessionActive: boolean) {
   const editor = useEditor();
   const [pendingImageIds, setPendingImageIds] = useState<TLShapeId[]>([]);
   const [status, setStatus] = useState<StatusIndicatorState>("idle");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [statusMessage, setStatusMessage] = useState<string>("");
   const [isAIEnabled, setIsAIEnabled] = useState<boolean>(true);
-  
+
   const isProcessingRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const isUpdatingImageRef = useRef(false);
 
   const getStatusMessage = useCallback((statusType: "generating" | "success") => {
-    if (statusType === "generating") {
-      return "Thinking...";
-    } else if (statusType === "success") {
-      return "Success!";
-    }
+    if (statusType === "generating") return "Thinking...";
+    if (statusType === "success") return "Success!";
     return "";
   }, []);
 
@@ -70,13 +59,13 @@ export function useCanvasSolver(
       try {
         const viewportBounds = editor.getViewportPageBounds();
         const shapesToCapture = [...shapeIds].filter(id => !pendingImageIds.includes(id));
-        
+
         let blob: Blob | null = null;
         if (shapesToCapture.length > 0) {
           const result = await editor.toImage(shapesToCapture, {
-            format: "jpeg",    
-            quality: 0.7,     
-            scale: 0.7,        
+            format: "jpeg",
+            quality: 0.7,
+            scale: 0.7,
             bounds: viewportBounds,
             background: true,
             padding: 0,
@@ -91,14 +80,9 @@ export function useCanvasSolver(
 
         if (signal.aborted) return { success: false, textContent: "" };
 
-        // OPTIMIZATION: Skip Base64 conversion and send raw binary via FormData
         const formData = new FormData();
-        if (blob) {
-          formData.append("image", blob, "canvas.jpg");
-        }
-        if (options?.promptOverride) {
-          formData.append("prompt", options.promptOverride);
-        }
+        if (blob) formData.append("image", blob, "canvas.jpg");
+        if (options?.promptOverride) formData.append("prompt", options.promptOverride);
         if (options?.images && options.images.length > 0) {
           options.images.forEach((file, index) => {
             formData.append(`reference_${index}`, file);
@@ -122,13 +106,11 @@ export function useCanvasSolver(
         const solutionData = await solutionResponse.json();
         const imageUrl = solutionData.imageUrl as string | null | undefined;
         const textContent = solutionData.textContent || '';
-        const targetLayerName = solutionData.targetLayer as string | null | undefined;
 
-        logger.info({ 
-          hasImageUrl: !!imageUrl, 
+        logger.info({
+          hasImageUrl: !!imageUrl,
           imageUrlLength: imageUrl?.length,
-          textContent: textContent,
-          targetLayerName
+          textContent,
         }, 'Solution data received');
 
         if (!imageUrl || signal.aborted) {
@@ -141,15 +123,14 @@ export function useCanvasSolver(
 
         if (signal.aborted) return { success: false, textContent: "" };
 
-        // Process image to remove white background
         const processedImageUrl = await removeWhiteBackground(imageUrl);
 
         const assetId = AssetRecordType.createId();
         const img = new Image();
-        
+
         await new Promise((resolve, reject) => {
           img.onload = () => resolve(null);
-          img.onerror = (e) => reject(new Error('Failed to load generated image'));
+          img.onerror = () => reject(new Error('Failed to load generated image'));
           img.src = processedImageUrl;
         });
 
@@ -182,41 +163,22 @@ export function useCanvasSolver(
         const shapeWidth = img.width * scale;
         const shapeHeight = img.height * scale;
 
-        // Resolve target layer - fallback to active, then first available, then 'default'
-        let destinationLayerId = activeLayerId || layers[0]?.id || 'default';
-        if (targetLayerName && findOrCreateLayer) {
-          destinationLayerId = findOrCreateLayer(targetLayerName);
-        }
-
-        // Use the latest visibility from the layers array
-        // Note: if destinationLayerId was just created, it won't be in 'layers' yet
-        // but it will be isVisible: true by default, so initialOpacity 1 is correct.
-        const targetLayer = layers.find(l => l.id === destinationLayerId);
-        const initialOpacity = targetLayer?.isVisible === false ? 0 : 1;
-
         editor.createShape({
           id: shapeId,
           type: "image",
           x: viewportBounds.x + (viewportBounds.width - shapeWidth) / 2,
           y: viewportBounds.y + (viewportBounds.height - shapeHeight) / 2,
-          opacity: initialOpacity,
           isLocked: true,
           props: {
             w: shapeWidth,
             h: shapeHeight,
             assetId: assetId,
           },
-          meta: {
-            layerId: destinationLayerId,
-          },
+          meta: {},
         });
 
-        if (assignShapeToLayer) {
-          assignShapeToLayer(shapeId, destinationLayerId);
-        }
-
         setPendingImageIds((prev) => [...prev, shapeId]);
-        
+
         setStatus("success");
         setStatusMessage(getStatusMessage("success"));
         setTimeout(() => {
@@ -235,12 +197,12 @@ export function useCanvasSolver(
           setStatusMessage("");
           return { success: false, textContent: "" };
         }
-        
+
         logger.error(error, 'Auto-generation error');
         setErrorMessage(error instanceof Error ? error.message : 'Generation failed');
         setStatus("error");
         setStatusMessage("");
-        
+
         setTimeout(() => {
           setStatus("idle");
           setErrorMessage("");
@@ -252,7 +214,7 @@ export function useCanvasSolver(
         abortControllerRef.current = null;
       }
     },
-    [editor, pendingImageIds, isVoiceSessionActive, getStatusMessage, isAIEnabled, findOrCreateLayer, activeLayerId, layers, assignShapeToLayer],
+    [editor, pendingImageIds, isVoiceSessionActive, getStatusMessage, isAIEnabled],
   );
 
   const handleAutoGeneration = useCallback(() => {
@@ -288,18 +250,12 @@ export function useCanvasSolver(
     (shapeId: TLShapeId) => {
       if (!editor) return;
       isUpdatingImageRef.current = true;
-      
-      const shape = editor.getShape(shapeId);
-      const layerId = getLayerIdForShape ? getLayerIdForShape(shapeId) : (shape?.meta as any)?.layerId;
-      const layer = layers.find(l => l.id === layerId);
-      const targetOpacity = layer?.isVisible === false ? 0 : 1;
-
-      editor.updateShape({ id: shapeId, type: "image", isLocked: false, opacity: targetOpacity });
+      editor.updateShape({ id: shapeId, type: "image", isLocked: false });
       editor.updateShape({ id: shapeId, type: "image", isLocked: true });
       setPendingImageIds((prev) => prev.filter((id) => id !== shapeId));
       setTimeout(() => { isUpdatingImageRef.current = false; }, 100);
     },
-    [editor, getLayerIdForShape, layers]
+    [editor]
   );
 
   const handleReject = useCallback(
@@ -335,6 +291,6 @@ export function useCanvasSolver(
     handleAccept,
     handleReject,
     cancelGeneration,
-    isUpdatingImageRef, // Needed for useBoardSync
+    isUpdatingImageRef,
   };
 }

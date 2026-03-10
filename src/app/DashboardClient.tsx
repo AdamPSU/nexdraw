@@ -39,7 +39,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import { createWhiteboard, deleteWhiteboard, renameWhiteboard } from './actions';
-import { ConstellationBackground } from '@/components/ConstellationBackground';
+import { ConstellationBackground } from '@/components/shared/ConstellationBackground';
 import { cn } from '@/lib/utils';
 
 type Whiteboard = {

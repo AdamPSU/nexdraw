@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { SparklesIcon } from "hugeicons-react";
 
-export type StatusIndicatorState = 
+export type StatusIndicatorState =
   | "idle"
   | "generating"
   | "success"
@@ -18,12 +18,11 @@ export function StatusIndicator({ status, errorMessage, customMessage }: StatusI
 
   const isError = status === "error";
   const isGenerating = status === "generating";
-  
-  const message = customMessage || (isError && errorMessage 
-    ? errorMessage 
+
+  const message = customMessage || (isError && errorMessage
+    ? errorMessage
     : isGenerating ? "AI is thinking..." : "Success!");
 
-  // Generate random positions for the "nodes" in the mesh
   const nodes = [
     { id: 1, top: "20%", left: "10%" },
     { id: 2, top: "70%", left: "30%" },
@@ -43,43 +42,27 @@ export function StatusIndicator({ status, errorMessage, customMessage }: StatusI
           isError ? "border-red-200 dark:border-red-900" : "border-neutral-200 dark:border-neutral-800"
         }`}
       >
-        {/* Living Neural Mesh Background (No Gradient) */}
         {isGenerating && (
           <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-            {/* Grid Pattern */}
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:10px_10px]" />
-            
-            {/* Drifting Nodes */}
+
             {nodes.map((node) => (
               <motion.div
                 key={node.id}
                 className="absolute w-1 h-1 bg-blue-500/20 rounded-full"
                 style={{ top: node.top, left: node.left }}
-                animate={{
-                  opacity: [0.1, 0.4, 0.1],
-                  scale: [1, 1.2, 1],
-                }}
-                transition={{
-                  duration: 2 + Math.random() * 2,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
+                animate={{ opacity: [0.1, 0.4, 0.1], scale: [1, 1.2, 1] }}
+                transition={{ duration: 2 + Math.random() * 2, repeat: Infinity, ease: "easeInOut" }}
               />
             ))}
 
-            {/* Zipping Data Packets */}
             {[...Array(3)].map((_, i) => (
               <motion.div
                 key={`packet-${i}`}
                 className="absolute h-[1px] w-4 bg-blue-500/30"
                 style={{ top: `${25 + i * 25}%` }}
                 animate={{ x: ["-100%", "400%"] }}
-                transition={{
-                  duration: 1.2,
-                  delay: i * 0.4,
-                  repeat: Infinity,
-                  ease: "linear",
-                }}
+                transition={{ duration: 1.2, delay: i * 0.4, repeat: Infinity, ease: "linear" }}
               />
             ))}
           </div>
@@ -98,7 +81,7 @@ export function StatusIndicator({ status, errorMessage, customMessage }: StatusI
               <SparklesIcon size={16} fill="currentColor" />
             </div>
           )}
-          
+
           <span className={`text-sm font-medium tracking-tight ${
             isError ? "text-red-600" : "text-neutral-700 dark:text-neutral-300"
           }`}>

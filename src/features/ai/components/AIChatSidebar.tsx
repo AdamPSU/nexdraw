@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, Sparkles, Loader2, Image as ImageIcon, Plus } from "lucide-react";
+import { X, Send, Sparkles, Loader2, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -50,9 +50,7 @@ export function AIChatSidebar({ isOpen, onClose, onSubmit, status }: AIChatSideb
     for (let i = 0; i < items.length; i++) {
       if (items[i].type.indexOf("image") !== -1) {
         const file = items[i].getAsFile();
-        if (file) {
-          setSelectedImages((prev) => [...prev, file]);
-        }
+        if (file) setSelectedImages((prev) => [...prev, file]);
       }
     }
   };
@@ -81,30 +79,18 @@ export function AIChatSidebar({ isOpen, onClose, onSubmit, status }: AIChatSideb
       if (result.textContent) {
         setMessages((prev) => [
           ...prev,
-          {
-            id: (Date.now() + 1).toString(),
-            role: "ai",
-            content: result.textContent,
-          },
+          { id: (Date.now() + 1).toString(), role: "ai", content: result.textContent },
         ]);
       } else if (result.success) {
         setMessages((prev) => [
           ...prev,
-          {
-            id: (Date.now() + 1).toString(),
-            role: "ai",
-            content: "I've processed your request on the canvas.",
-          },
+          { id: (Date.now() + 1).toString(), role: "ai", content: "I've processed your request on the canvas." },
         ]);
       }
     } catch (error) {
       setMessages((prev) => [
         ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          role: "ai",
-          content: "Sorry, I encountered an error while processing that.",
-        },
+        { id: (Date.now() + 1).toString(), role: "ai", content: "Sorry, I encountered an error while processing that." },
       ]);
     }
   };
@@ -126,13 +112,13 @@ export function AIChatSidebar({ isOpen, onClose, onSubmit, status }: AIChatSideb
               </div>
               <h2 className="font-semibold text-sm">AI Agent</h2>
             </div>
-            
+
             <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-full">
               <X size={16} />
             </Button>
           </div>
 
-          <div 
+          <div
             ref={scrollRef}
             className="flex-1 overflow-y-auto custom-scrollbar [direction:rtl]"
           >
@@ -165,10 +151,10 @@ export function AIChatSidebar({ isOpen, onClose, onSubmit, status }: AIChatSideb
                     {m.images && m.images.length > 0 && (
                       <div className="flex flex-wrap gap-2 mb-2">
                         {m.images.map((img, i) => (
-                          <img 
-                            key={i} 
-                            src={img} 
-                            alt="uploaded" 
+                          <img
+                            key={i}
+                            src={img}
+                            alt="uploaded"
                             className="w-20 h-20 object-cover rounded-lg border border-neutral-200 dark:border-neutral-800"
                           />
                         ))}
@@ -192,9 +178,9 @@ export function AIChatSidebar({ isOpen, onClose, onSubmit, status }: AIChatSideb
               <div className="flex flex-wrap gap-2 mb-3 px-1">
                 {selectedImages.map((file, i) => (
                   <div key={i} className="relative group">
-                    <img 
-                      src={URL.createObjectURL(file)} 
-                      alt="preview" 
+                    <img
+                      src={URL.createObjectURL(file)}
+                      alt="preview"
                       className="w-14 h-14 object-cover rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm"
                     />
                     <button
@@ -207,7 +193,7 @@ export function AIChatSidebar({ isOpen, onClose, onSubmit, status }: AIChatSideb
                 ))}
               </div>
             )}
-            
+
             <form onSubmit={handleSubmit} className="relative flex gap-2">
               <div className="relative flex-1">
                 <Input
@@ -227,7 +213,7 @@ export function AIChatSidebar({ isOpen, onClose, onSubmit, status }: AIChatSideb
                   <Send size={16} />
                 </Button>
               </div>
-              
+
               <Button
                 type="button"
                 variant="outline"
@@ -237,8 +223,8 @@ export function AIChatSidebar({ isOpen, onClose, onSubmit, status }: AIChatSideb
               >
                 <ImageIcon size={18} className="text-neutral-500" />
               </Button>
-              
-              <input 
+
+              <input
                 type="file"
                 ref={fileInputRef}
                 onChange={handleImageSelect}

@@ -48,12 +48,11 @@ export function useVoiceAgent({
     try {
       setStatus("transcribing");
       setStatusDetail("Transcribing...");
-      
+
       await wavRecorderRef.current.pause();
       const audioData = await wavRecorderRef.current.save();
       await wavRecorderRef.current.end();
-      
-      // Send to our transcription proxy
+
       const formData = new FormData();
       formData.append('audio', audioData.blob, 'audio.wav');
 
@@ -62,12 +61,10 @@ export function useVoiceAgent({
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error('Transcription failed');
-      }
+      if (!response.ok) throw new Error('Transcription failed');
 
       const { text } = await response.json();
-      
+
       if (!text || text.trim().length === 0) {
         setStatus("idle");
         setStatusDetail(null);
@@ -107,11 +104,9 @@ export function useVoiceAgent({
   }, [status, startRecording, stopRecording]);
 
   const toggleMute = useCallback(() => {
-    // With current STT flow, mute simply stops the recorder or ignores input
     setIsMuted((prev) => !prev);
   }, []);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (wavRecorderRef.current.getStatus() !== 'ended') {

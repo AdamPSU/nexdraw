@@ -36,7 +36,6 @@ export const ConstellationBackground = () => {
       update(width: number, height: number) {
         this.x += this.vx;
         this.y += this.vy;
-
         if (this.x < 0 || this.x > width) this.vx *= -1;
         if (this.y < 0 || this.y > height) this.vy *= -1;
       }
@@ -60,15 +59,9 @@ export const ConstellationBackground = () => {
     };
 
     const animate = (time: number = 0) => {
-      // Speed up the cycle (approx 3 seconds for a full loop)
       const pulse = (Math.sin(time / 500) + 1) / 2;
-      
-      // Transition from light gray (210) to pitch black (0)
       const colorVal = Math.floor(210 * (1 - pulse));
-      
-      // Opacity also pulses for a stronger "glow" effect
       const opacityVal = 0.2 + (pulse * 0.4);
-      
       const particleColor = `rgba(${colorVal}, ${colorVal}, ${colorVal}, ${opacityVal})`;
       const lineColor = `rgba(${colorVal}, ${colorVal}, ${colorVal}, ${opacityVal * 0.3})`;
 
@@ -94,7 +87,6 @@ export const ConstellationBackground = () => {
           }
         }
 
-        // Connect to mouse
         const dxMouse = p.x - mouse.x;
         const dyMouse = p.y - mouse.y;
         const distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
@@ -115,18 +107,14 @@ export const ConstellationBackground = () => {
       mouse.y = e.clientY;
     };
 
-    const handleResize = () => {
-      init();
-    };
-
     window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('resize', handleResize);
+    window.addEventListener('resize', init);
     init();
     animate();
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('resize', init);
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
@@ -138,4 +126,3 @@ export const ConstellationBackground = () => {
     />
   );
 };
-

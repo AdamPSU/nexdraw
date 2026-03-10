@@ -3,11 +3,10 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-// Check if we have valid-looking credentials to prevent initialization errors during compilation
-const isConfigured = 
-  supabaseUrl && 
-  supabaseUrl.startsWith('http') && 
-  supabaseAnonKey && 
+const isConfigured =
+  supabaseUrl &&
+  supabaseUrl.startsWith('http') &&
+  supabaseAnonKey &&
   supabaseAnonKey !== 'placeholder-key';
 
 if (!isConfigured && typeof window !== 'undefined') {
@@ -16,15 +15,8 @@ if (!isConfigured && typeof window !== 'undefined') {
   );
 }
 
-// Only initialize if configured, otherwise export null to avoid crashing Next.js during build/dev
-export const supabase = isConfigured 
-  ? createClient(supabaseUrl, supabaseAnonKey) 
+export const supabase = isConfigured
+  ? createClient(supabaseUrl, supabaseAnonKey)
   : (null as any);
 
-
-
-
-
-
-
-
+export { createClient as createBrowserClient } from './client';

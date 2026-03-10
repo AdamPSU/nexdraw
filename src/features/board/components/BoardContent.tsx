@@ -4,22 +4,20 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { TLShapeId, useEditor } from "tldraw";
 import { Button } from "@/components/ui/button";
-import { 
-  Tick01Icon, 
-  Cancel01Icon, 
+import {
+  Tick01Icon,
+  Cancel01Icon,
   ArrowLeft01Icon,
   SparklesIcon,
   Mic02Icon,
   MicOff02Icon,
   AiChat02Icon
 } from "hugeicons-react";
-import { useVoiceAgent } from "@/hooks/useVoiceAgent";
-import { useCanvasSolver } from "@/hooks/useCanvasSolver";
-import { useBoardSync } from "@/hooks/useBoardSync";
-import { useLayers } from "@/hooks/useLayers";
-import { StatusIndicator } from "@/components/StatusIndicator";
-import { AIChatSidebar } from "@/components/AIChatSidebar";
-import { LayerPanel } from "@/components/LayerPanel";
+import { useVoiceAgent } from "@/features/voice/hooks/useVoiceAgent";
+import { useCanvasSolver } from "@/features/ai/hooks/useCanvasSolver";
+import { useBoardSync } from "@/features/board/hooks/useBoardSync";
+import { StatusIndicator } from "@/features/ai/components/StatusIndicator";
+import { AIChatSidebar } from "@/features/ai/components/AIChatSidebar";
 import { cn } from "@/lib/utils";
 
 function ImageActionButtons({
@@ -48,16 +46,16 @@ function ImageActionButtons({
         gap: '8px',
       }}
     >
-      <Button 
-        variant="outline" 
+      <Button
+        variant="outline"
         onClick={() => onReject(currentImageId)}
         className="rounded-xl shadow-md h-9 bg-white dark:bg-neutral-900 border-neutral-200"
       >
         <Cancel01Icon size={18} strokeWidth={2.5} />
         <span className="ml-2 font-medium">Reject</span>
       </Button>
-      <Button 
-        variant="default" 
+      <Button
+        variant="default"
         onClick={() => onAccept(currentImageId)}
         className="rounded-xl shadow-md h-9"
       >
@@ -68,33 +66,19 @@ function ImageActionButtons({
   );
 }
 
-export function BoardContent({ 
-  id, 
-  isChatOpen, 
-  setIsChatOpen 
-}: { 
-  id: string; 
-  isChatOpen: boolean; 
-  setIsChatOpen: (open: boolean) => void; 
+export function BoardContent({
+  id,
+  isChatOpen,
+  setIsChatOpen
+}: {
+  id: string;
+  isChatOpen: boolean;
+  setIsChatOpen: (open: boolean) => void;
 }) {
   const router = useRouter();
   const [isVoiceSessionActive, setIsVoiceSessionActive] = useState(false);
 
   const editor = useEditor();
-  const {
-    layers,
-    activeLayerId,
-    setActiveLayerId,
-    addLayer,
-    deleteLayer,
-    toggleVisibility,
-    toggleLock,
-    renameLayer,
-    moveLayer,
-    findOrCreateLayer,
-    assignShapeToLayer,
-    getLayerIdForShape,
-  } = useLayers(editor);
 
   const {
     pendingImageIds,
@@ -108,14 +92,7 @@ export function BoardContent({
     handleReject,
     cancelGeneration,
     isUpdatingImageRef,
-  } = useCanvasSolver(
-    isVoiceSessionActive,
-    findOrCreateLayer,
-    activeLayerId,
-    layers,
-    assignShapeToLayer,
-    getLayerIdForShape
-  );
+  } = useCanvasSolver(isVoiceSessionActive);
 
   const voiceAgent = useVoiceAgent({
     onSessionChange: setIsVoiceSessionActive,
@@ -137,20 +114,6 @@ export function BoardContent({
     }
   }, [isChatOpen, cancelGeneration]);
 
-  // Helper to suppress AI triggering during layer operations
-  const wrapLayerAction = <T extends (...args: any[]) => any>(action: T) => {
-    return (...args: Parameters<T>) => {
-      isUpdatingImageRef.current = true;
-      try {
-        action(...args);
-      } finally {
-        setTimeout(() => {
-          isUpdatingImageRef.current = false;
-        }, 500);
-      }
-    };
-  };
-
   return (
     <>
       {!isVoiceSessionActive && (
@@ -168,8 +131,8 @@ export function BoardContent({
           <Button variant="ghost" size="icon" onClick={() => router.back()}>
             <ArrowLeft01Icon size={20} strokeWidth={2} />
           </Button>
-          
-          <Button 
+
+          <Button
             variant={isAIEnabled ? "default" : "outline"}
             onClick={() => setIsAIEnabled(!isAIEnabled)}
             className={cn(
@@ -227,7 +190,7 @@ export function BoardContent({
           gap: '8px',
         }}
       >
-        <Button 
+        <Button
           variant={isChatOpen ? "default" : "outline"}
           size="icon"
           onClick={() => setIsChatOpen(!isChatOpen)}
@@ -240,7 +203,7 @@ export function BoardContent({
           <AiChat02Icon size={18} />
         </Button>
 
-        <Button 
+        <Button
           variant={voiceAgent.status === "recording" ? "default" : "outline"}
           onClick={voiceAgent.toggleSession}
           disabled={voiceAgent.status !== "idle" && voiceAgent.status !== "recording" && voiceAgent.status !== "error"}
@@ -281,21 +244,6 @@ export function BoardContent({
         onAccept={handleAccept}
         onReject={handleReject}
       />
-
-
-      <LayerPanel
-        layers={layers}
-        activeLayerId={activeLayerId}
-        onSetActiveLayer={wrapLayerAction(setActiveLayerId)}
-        onAddLayer={wrapLayerAction(addLayer)}
-        onDeleteLayer={wrapLayerAction(deleteLayer)}
-        onToggleVisibility={wrapLayerAction(toggleVisibility)}
-        onToggleLock={wrapLayerAction(toggleLock)}
-        onRenameLayer={wrapLayerAction(renameLayer)}
-        onMoveLayer={wrapLayerAction(moveLayer)}
-        isChatOpen={isChatOpen}
-      />
     </>
   );
 }
-

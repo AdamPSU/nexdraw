@@ -72,21 +72,12 @@ export function BoardClient({ id, initialData }: BoardClientProps) {
         }
       }}
     >
-      <BoardContent 
-        id={id} 
-        isChatOpen={isChatOpen} 
-        setIsChatOpen={setIsChatOpen} 
+      <BoardContent
+        id={id}
+        isChatOpen={isChatOpen}
+        setIsChatOpen={setIsChatOpen}
       />
     </Tldraw>
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
