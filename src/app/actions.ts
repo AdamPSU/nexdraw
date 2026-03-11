@@ -2,13 +2,14 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { generateBoardName } from '@/lib/nameGenerator';
 
 export async function createWhiteboard() {
   const supabase = await createClient();
   
   const { data, error } = await supabase
     .from('whiteboards')
-    .insert([{ title: 'Untitled Whiteboard', data: {} }])
+    .insert([{ title: generateBoardName(), data: {} }])
     .select()
     .single();
 
