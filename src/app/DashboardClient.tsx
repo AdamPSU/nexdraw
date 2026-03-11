@@ -4,13 +4,9 @@ import { useState, useOptimistic, useTransition, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Plus,
-  Trash2,
   Search,
-  Edit2,
-  ArrowUpRight,
   Clock,
   FileIcon,
-  MoreHorizontal,
   LayoutGrid,
   Settings,
   Star,
@@ -18,7 +14,8 @@ import {
   ChevronRight,
   FolderOpen
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import CardSwap, { Card } from '@/components/ui/CardSwap';
 import { toast } from "sonner";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,13 +27,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import { createWhiteboard, deleteWhiteboard, renameWhiteboard } from './actions';
 import { ConstellationBackground } from '@/components/shared/ConstellationBackground';
@@ -219,7 +209,7 @@ export default function DashboardClient({ initialWhiteboards }: { initialWhitebo
         </header>
 
         {/* Grid Content */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar p-8">
           <div className="max-w-7xl mx-auto space-y-10">
             {/* Featured Section */}
             <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -255,99 +245,43 @@ export default function DashboardClient({ initialWhiteboards }: { initialWhitebo
             </section>
 
             {/* List Section */}
-            <section className="space-y-6">
-              <div className="flex items-center justify-between">
+            <section className="relative overflow-visible" style={{ minHeight: '600px' }}>
+              <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold tracking-tight">Your Canvases</h2>
-                <div className="flex items-center gap-2 p-1 bg-neutral-100 dark:bg-neutral-900 rounded-lg">
-                  <button className="p-1.5 rounded-md bg-white dark:bg-black shadow-sm text-black dark:text-white"><LayoutGrid size={16} /></button>
-                  <button className="p-1.5 rounded-md text-neutral-400 hover:text-black dark:hover:text-white transition-colors"><MoreHorizontal size={16} /></button>
-                </div>
               </div>
 
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                <AnimatePresence mode="popLayout">
-                  {filteredWhiteboards.map((board) => (
-                    <motion.div
-                      layout
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      key={board.id}
-                      className="group flex flex-col rounded-3xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 overflow-hidden hover:shadow-2xl hover:shadow-black/5 dark:hover:shadow-white/5 transition-all"
-                    >
-                      <div 
-                        className="relative h-44 bg-neutral-50 dark:bg-neutral-900 cursor-pointer overflow-hidden"
-                        onClick={() => router.push(`/board/${board.id}`)}
-                      >
-                        {board.preview ? (
-                          <img
-                            src={board.preview}
-                            alt={board.title}
-                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                        ) : (
-                          <div className="h-full w-full flex items-center justify-center">
-                            <FileIcon className="text-neutral-300 dark:text-neutral-700" size={40} strokeWidth={1} />
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
-                        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                              <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur shadow-lg border-none hover:scale-110 transition-transform">
-                                <MoreHorizontal size={14} />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-40 rounded-xl">
-                              <DropdownMenuItem onClick={() => {
-                                setRenameId(board.id);
-                                setRenameTitle(board.title);
-                              }}>
-                                <Edit2 className="mr-2 h-4 w-4" /> Rename
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                className="text-red-500 focus:text-red-500"
-                                onClick={() => handleDelete(board.id)}
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" /> Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </div>
-                      
-                      <div className="p-5">
-                        <div className="flex items-start justify-between gap-4 mb-4">
-                          <div className="min-w-0">
-                            <h3 className="font-bold truncate text-base leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{board.title}</h3>
-                            <div className="mt-1 flex items-center gap-2 text-xs text-neutral-400">
-                              <Clock size={12} />
-                              <span>{formatTime(board.updated_at)}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <Button
-                          variant="outline"
-                          className="w-full justify-between h-9 rounded-xl border-neutral-200 dark:border-neutral-800 text-[10px] uppercase tracking-widest font-black hover:bg-neutral-50 dark:hover:bg-neutral-900 group/btn"
-                          onClick={() => router.push(`/board/${board.id}`)}
-                        >
-                          Open Canvas
-                          <ArrowUpRight className="text-neutral-400 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" size={14} />
-                        </Button>
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-
-              {filteredWhiteboards.length === 0 && (
+              {filteredWhiteboards.length === 0 ? (
                 <div className="h-64 flex flex-col items-center justify-center text-center p-10 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-[32px]">
                   <div className="w-16 h-16 bg-neutral-50 dark:bg-neutral-900 rounded-full flex items-center justify-center mb-4">
                     <Search className="text-neutral-300" size={24} />
                   </div>
                   <h3 className="text-xl font-bold">No results found</h3>
                   <p className="text-sm text-neutral-500 mt-1 max-w-xs">Try a different keyword.</p>
+                </div>
+              ) : (
+                <div style={{ position: 'absolute', bottom: '-80px', right: 0, transform: 'translate(20%, 20%)' }}>
+                  <CardSwap
+                    cardDistance={85}
+                    verticalDistance={95}
+                    delay={5000}
+                    width={850}
+                    height={550}
+                    pauseOnHover
+                    easing="elastic"
+                  >
+                    {filteredWhiteboards.slice(0, 5).map((board) => (
+                      <Card key={board.id} customClass="cursor-pointer" onClick={() => router.push(`/board/${board.id}`)}>
+                        {board.preview
+                          ? <img src={board.preview} className="w-full h-full object-cover rounded-xl" />
+                          : <div className="w-full h-full flex items-center justify-center bg-neutral-900"><FileIcon size={60} className="text-neutral-600" strokeWidth={1} /></div>
+                        }
+                        <div className="absolute top-0 inset-x-0 p-6 bg-gradient-to-b from-black/80 to-transparent">
+                          <p className="text-white font-bold text-base truncate">{board.title}</p>
+                          <p className="text-white/50 text-sm flex items-center gap-1"><Clock size={12} />{formatTime(board.updated_at)}</p>
+                        </div>
+                      </Card>
+                    ))}
+                  </CardSwap>
                 </div>
               )}
             </section>
