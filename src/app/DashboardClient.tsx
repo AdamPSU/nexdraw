@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import ChromaGrid, { ChromaItem } from "@/components/ui/ChromaGrid";
 import Dither from "@/components/Dither";
 import { createWhiteboard, deleteWhiteboard, renameWhiteboard } from "./actions";
+import { cn } from "@/lib/utils";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
+import { LineShadowText } from "@/components/ui/line-shadow-text";
 import {
   Dialog,
   DialogContent,
@@ -111,15 +114,52 @@ export default function DashboardClient({ initialWhiteboards }: { initialWhitebo
       />
 
       {/* Navbar */}
-      <nav className="relative z-10 flex items-center justify-between px-8 py-6">
-        <div className="flex items-center gap-3">
-          <div className="w-6 h-6 bg-white rounded-sm rotate-45" />
-          <span className="text-lg font-display font-bold tracking-tighter text-white">NEXHACKS</span>
+      <nav className="relative z-50 flex items-center justify-between px-8 py-3 border-b border-white/5 bg-black/20 backdrop-blur-md">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3 group cursor-pointer">
+            <div className="w-5 h-5 bg-white rounded-sm rotate-45 group-hover:rotate-90 transition-transform duration-500" />
+            <div className="flex flex-col">
+              <span className="text-sm font-display font-bold tracking-tighter text-white leading-none">NEXHACKS</span>
+            </div>
+          </div>
+          
+          <div className="h-4 w-[1px] bg-white/10 mx-2" />
+
+          <div className="hidden md:flex items-center gap-8 font-code">
+            {[
+              { label: 'Home', active: true },
+              { label: 'Canvases', active: false },
+              { label: 'Cloud', active: false },
+              { label: 'Documentation', active: false },
+            ].map((link) => (
+              <a 
+                key={link.label}
+                href="#" 
+                className={cn(
+                  "text-[10px] uppercase tracking-[0.15em] transition-all duration-300 flex items-center gap-2 group",
+                  link.active ? "text-white" : "text-white/40 hover:text-white"
+                )}
+              >
+                <span className={cn(
+                  "w-1 h-1 rounded-full transition-all duration-300",
+                  link.active ? "bg-white scale-100" : "bg-white/0 scale-0 group-hover:scale-100 group-hover:bg-white/40"
+                )} />
+                {link.label}
+              </a>
+            ))}
+          </div>
         </div>
-        <div className="hidden md:flex items-center gap-10 text-[11px] font-mono uppercase tracking-[0.2em] text-white/60">
-          <a href="#" className="hover:text-white transition-colors">Home</a>
-          <a href="#" className="hover:text-white transition-colors">Canvases</a>
-          <a href="#" className="hover:text-white transition-colors">About</a>
+
+        <div className="flex items-center gap-8">
+          <div className="flex items-center gap-4 font-mono">
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] text-white font-bold tracking-tight">Adam Torres</span>
+              <span className="text-[8px] text-white/30 uppercase tracking-widest">Pro Developer</span>
+            </div>
+            <div className="w-8 h-8 rounded-full border border-white/10 bg-gradient-to-br from-white/10 to-transparent flex items-center justify-center text-[10px] text-white/60 font-bold overflow-hidden">
+              AT
+            </div>
+          </div>
         </div>
       </nav>
 
@@ -127,24 +167,32 @@ export default function DashboardClient({ initialWhiteboards }: { initialWhitebo
       <div className="relative z-10 grid flex-1 gap-x-16 px-8 md:px-16 pt-10 pb-0 overflow-hidden"
            style={{ gridTemplateColumns: '1fr 2fr' }}>
         {/* Left: hero text */}
-        <div className="flex flex-col justify-between pt-0 pb-12 h-full">
+        <div className="flex flex-col pt-0 pb-12 h-full gap-10">
           <div className="flex flex-col gap-4">
             <h1 className="text-hero text-white">
               The AI-powered <br/>
-              canvas.
+              <LineShadowText className="text-white italic" shadowColor="white">
+                canvas.
+              </LineShadowText>
             </h1>
             <p className="text-sm text-body-code text-white/70 max-w-sm">
               Sketch, brainstorm, and build with an AI copilot that understands your spatial intent in real-time.
             </p>
           </div>
           <div className="flex items-center gap-4">
-            <button
+            <ShimmerButton
               onClick={handleCreate}
               disabled={isPending}
-              className="text-xs font-mono uppercase tracking-widest bg-white text-black px-8 py-4 rounded-full hover:bg-neutral-200 transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50"
+              borderRadius="0px"
+              shimmerSize="0.1em"
+              background="white"
+              shimmerColor="#000000"
+              className="text-xs font-mono uppercase tracking-widest text-black px-12 py-5 transform transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 border-none shadow-2xl"
             >
-              {isPending ? "Initializing..." : "Create New Canvas"}
-            </button>
+              <span className="relative z-10">
+                {isPending ? "Initializing..." : "Create New Artifact"}
+              </span>
+            </ShimmerButton>
           </div>
         </div>
 

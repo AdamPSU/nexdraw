@@ -44,7 +44,34 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-}
+  --animate-shimmer-slide: shimmer-slide var(--speed) ease-in-out infinite alternate;
+  --animate-spin-around: spin-around calc(var(--speed) * 2) infinite linear;
+  @keyframes shimmer-slide {
+  to {
+    transform: translate(calc(100cqw - 100%), 0);
+    }
+  }
+  @keyframes spin-around {
+  0% {
+    transform: translateZ(0) rotate(0);
+    }
+  15%, 35% {
+    transform: translateZ(0) rotate(90deg);
+    }
+  65%, 85% {
+    transform: translateZ(0) rotate(270deg);
+    }
+  100% {
+    transform: translateZ(0) rotate(360deg);
+    }
+  }
+  --animate-line-shadow: line-shadow 15s linear infinite
+;
+  @keyframes line-shadow {
+  0% {
+    background-position: 0 0;}
+  100% {
+    background-position: 100% -100%;}}}
 
 :root {
   --radius: 0.625rem;
@@ -128,7 +155,7 @@
   .font-display { font-family: var(--font-space-grotesk); }
   .font-mono { font-family: var(--font-jetbrains-mono); }
   .font-code { font-family: var(--font-ibm-plex-mono); }
-  
+
   .text-hero {
     font-family: var(--font-space-grotesk);
     font-size: clamp(2.5rem, 6vw, 5rem);
