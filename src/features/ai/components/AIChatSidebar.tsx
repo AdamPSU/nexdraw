@@ -103,17 +103,17 @@ export function AIChatSidebar({ isOpen, onClose, onSubmit, status }: AIChatSideb
           animate={{ x: 0 }}
           exit={{ x: "-100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          className="fixed top-0 left-0 h-full w-[350px] bg-white dark:bg-neutral-950 border-r border-neutral-200 dark:border-neutral-800 z-[3000] shadow-2xl flex flex-col"
+          className="fixed top-0 left-0 h-full w-[350px] bg-white dark:bg-neutral-950 border-r border-neutral-200 dark:border-neutral-800 z-[3000] shadow-2xl flex flex-col font-code"
         >
-          <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 bg-neutral-100 dark:bg-neutral-900 rounded-lg text-neutral-600 dark:text-neutral-400">
-                <Sparkles size={18} />
+          <div className="p-5 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-white dark:bg-black">
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 bg-neutral-100 dark:bg-neutral-900 rounded-none text-neutral-600 dark:text-neutral-400 rotate-45">
+                <Sparkles size={16} className="-rotate-45" />
               </div>
-              <h2 className="font-semibold text-sm">AI Agent</h2>
+              <h2 className="font-display font-bold text-sm tracking-tight uppercase">AI Terminal</h2>
             </div>
 
-            <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-full">
+            <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-none hover:bg-neutral-100 dark:hover:bg-neutral-900">
               <X size={16} />
             </Button>
           </div>
@@ -124,12 +124,14 @@ export function AIChatSidebar({ isOpen, onClose, onSubmit, status }: AIChatSideb
           >
             <div className="[direction:ltr] p-4 flex flex-col gap-4">
               {messages.length === 0 && (
-                <div className="h-full flex flex-col items-center justify-center text-center p-6 opacity-50">
-                  <div className="w-12 h-12 bg-neutral-100 dark:bg-neutral-900 rounded-full flex items-center justify-center mb-4">
-                    <Sparkles size={24} />
+                <div className="h-full flex flex-col items-center justify-center text-center p-8 opacity-40">
+                  <div className="w-10 h-10 bg-neutral-100 dark:bg-neutral-900 rounded-none flex items-center justify-center mb-6 rotate-45 border border-white/5">
+                    <Sparkles size={20} className="-rotate-45" />
                   </div>
-                  <p className="text-sm font-medium">How can I help you draw today?</p>
-                  <p className="text-xs mt-1">Try "draw a cat" or "add a table".</p>
+                  <p className="font-display font-bold text-base tracking-tight mb-2 uppercase">Neural Interface Offline</p>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.2em] max-w-[200px] leading-relaxed">
+                    Awaiting prompt to synthesize visual artifacts. Try "generate complex flowchart".
+                  </p>
                 </div>
               )}
               {messages.map((m) => (
@@ -142,10 +144,10 @@ export function AIChatSidebar({ isOpen, onClose, onSubmit, status }: AIChatSideb
                 >
                   <div
                     className={cn(
-                      "px-3 py-2 rounded-2xl text-sm shadow-sm",
+                      "px-4 py-3 rounded-none text-[13px] shadow-sm leading-relaxed",
                       m.role === "user"
                         ? "bg-black text-white dark:bg-white dark:text-black"
-                        : "bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100"
+                        : "bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 border border-neutral-200 dark:border-neutral-800"
                     )}
                   >
                     {m.images && m.images.length > 0 && (
@@ -194,21 +196,21 @@ export function AIChatSidebar({ isOpen, onClose, onSubmit, status }: AIChatSideb
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="relative flex gap-2">
-              <div className="relative flex-1">
+            <form onSubmit={handleSubmit} className="relative flex flex-col gap-2">
+              <div className="relative">
                 <Input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onPaste={handlePaste}
-                  placeholder="Ask AI to draw..."
-                  className="pr-10 h-11 rounded-xl bg-white dark:bg-neutral-950 border-neutral-200 dark:border-neutral-800 focus-visible:ring-black dark:focus-visible:ring-white"
+                  placeholder="System Input..."
+                  className="pr-12 h-12 rounded-none bg-white dark:bg-neutral-950 border-neutral-200 dark:border-neutral-800 focus-visible:ring-black dark:focus-visible:ring-white font-code text-sm"
                   autoFocus
                 />
                 <Button
                   type="submit"
                   size="icon"
                   disabled={(!input.trim() && selectedImages.length === 0) || status === "generating"}
-                  className="absolute right-1 top-1 h-9 w-9 rounded-lg bg-black text-white hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all active:scale-95 disabled:opacity-30"
+                  className="absolute right-1 top-1 h-10 w-10 rounded-none bg-black text-white hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all active:scale-95 disabled:opacity-30"
                 >
                   <Send size={16} />
                 </Button>
@@ -217,11 +219,11 @@ export function AIChatSidebar({ isOpen, onClose, onSubmit, status }: AIChatSideb
               <Button
                 type="button"
                 variant="outline"
-                size="icon"
                 onClick={() => fileInputRef.current?.click()}
-                className="h-11 w-11 rounded-xl border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 hover:bg-neutral-50 dark:hover:bg-neutral-900 flex-shrink-0"
+                className="h-10 w-full rounded-none border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 hover:bg-neutral-50 dark:hover:bg-neutral-900 flex items-center justify-center gap-2 font-mono text-[10px] uppercase tracking-widest text-neutral-500"
               >
-                <ImageIcon size={18} className="text-neutral-500" />
+                <ImageIcon size={14} />
+                Upload Context
               </Button>
 
               <input

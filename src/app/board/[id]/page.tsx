@@ -96,10 +96,17 @@ export default function BoardPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-          <p className="text-gray-500 font-medium animate-pulse">Loading your canvas...</p>
+      <div className="flex h-screen items-center justify-center bg-black">
+        <div className="flex flex-col items-center gap-6">
+          <Loader2 className="w-6 h-6 animate-spin text-white/20" />
+          <div className="flex flex-col items-center gap-1">
+            <p className="text-white font-display font-bold tracking-tighter text-xl animate-pulse">
+              Initializing Workspace
+            </p>
+            <p className="text-white/40 font-mono text-[10px] uppercase tracking-[0.2em]">
+              Fetching remote state...
+            </p>
+          </div>
         </div>
       </div>
     );

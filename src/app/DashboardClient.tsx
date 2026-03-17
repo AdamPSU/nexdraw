@@ -64,12 +64,12 @@ export default function DashboardClient({ initialWhiteboards }: { initialWhitebo
   };
 
   const PALETTES = [
-    { borderColor: 'rgba(139,92,246,0.5)',  gradient: 'linear-gradient(145deg,rgba(109,40,217,0.45),rgba(5,5,15,0.85))' },
-    { borderColor: 'rgba(236,72,153,0.5)',  gradient: 'linear-gradient(210deg,rgba(190,24,93,0.45),rgba(5,5,15,0.85))' },
-    { borderColor: 'rgba(99,102,241,0.5)',  gradient: 'linear-gradient(165deg,rgba(67,56,202,0.45),rgba(5,5,15,0.85))' },
-    { borderColor: 'rgba(6,182,212,0.5)',   gradient: 'linear-gradient(195deg,rgba(8,145,178,0.45),rgba(5,5,15,0.85))' },
-    { borderColor: 'rgba(167,139,250,0.5)', gradient: 'linear-gradient(225deg,rgba(124,58,237,0.45),rgba(5,5,15,0.85))' },
-    { borderColor: 'rgba(232,121,249,0.5)', gradient: 'linear-gradient(180deg,rgba(168,85,247,0.45),rgba(5,5,15,0.85))' },
+    { borderColor: 'rgba(139,92,246,0.7)',  gradient: 'linear-gradient(145deg,rgba(109,40,217,0.45),rgba(5,5,15,0.85))' },
+    { borderColor: 'rgba(192,38,211,0.7)',  gradient: 'linear-gradient(210deg,rgba(162,28,175,0.45),rgba(5,5,15,0.85))' },
+    { borderColor: 'rgba(37,99,235,0.7)',   gradient: 'linear-gradient(165deg,rgba(29,78,216,0.45),rgba(5,5,15,0.85))' },
+    { borderColor: 'rgba(79,70,229,0.7)',   gradient: 'linear-gradient(195deg,rgba(67,56,202,0.45),rgba(5,5,15,0.85))' },
+    { borderColor: 'rgba(14,165,233,0.7)',  gradient: 'linear-gradient(225deg,rgba(2,132,199,0.45),rgba(5,5,15,0.85))' },
+    { borderColor: 'rgba(124,58,237,0.7)',  gradient: 'linear-gradient(180deg,rgba(109,40,217,0.45),rgba(5,5,15,0.85))' },
   ];
 
   const cards = optimisticWhiteboards.length > 0
@@ -111,12 +111,12 @@ export default function DashboardClient({ initialWhiteboards }: { initialWhitebo
       />
 
       {/* Navbar */}
-      <nav className="relative z-10 flex items-center justify-between px-8 py-4">
+      <nav className="relative z-10 flex items-center justify-between px-8 py-6">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 bg-white rounded-md" />
-          <span className="text-base font-semibold tracking-tight text-white">Studio</span>
+          <div className="w-6 h-6 bg-white rounded-sm rotate-45" />
+          <span className="text-lg font-display font-bold tracking-tighter text-white">NEXHACKS</span>
         </div>
-        <div className="hidden md:flex items-center gap-8 text-sm font-bold text-white">
+        <div className="hidden md:flex items-center gap-10 text-[11px] font-mono uppercase tracking-[0.2em] text-white/60">
           <a href="#" className="hover:text-white transition-colors">Home</a>
           <a href="#" className="hover:text-white transition-colors">Canvases</a>
           <a href="#" className="hover:text-white transition-colors">About</a>
@@ -124,37 +124,40 @@ export default function DashboardClient({ initialWhiteboards }: { initialWhitebo
       </nav>
 
       {/* Hero */}
-      <div className="relative z-10 grid flex-1 gap-x-16 px-8 md:px-16 pt-16 pb-0 overflow-hidden"
+      <div className="relative z-10 grid flex-1 gap-x-16 px-8 md:px-16 pt-10 pb-0 overflow-hidden"
            style={{ gridTemplateColumns: '1fr 2fr' }}>
         {/* Left: hero text */}
-        <div className="flex flex-col justify-between pt-4 pb-8 h-full">
-          <div className="flex flex-col gap-6">
-            <h1
-              className="font-black text-white leading-tight tracking-tight"
-              style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)" }}
-            >
-              The AI-powered canvas.
+        <div className="flex flex-col justify-between pt-0 pb-12 h-full">
+          <div className="flex flex-col gap-4">
+            <h1 className="text-hero text-white">
+              The AI-powered <br/>
+              canvas.
             </h1>
-            <p className="text-lg text-white/70 leading-relaxed">
-              Sketch, brainstorm, and build with an AI copilot that understands your canvas.
+            <p className="text-sm text-body-code text-white/70 max-w-sm">
+              Sketch, brainstorm, and build with an AI copilot that understands your spatial intent in real-time.
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <button
               onClick={handleCreate}
               disabled={isPending}
-              className="text-sm font-semibold bg-white text-black px-6 py-3 rounded-lg hover:bg-white/90 transition-colors disabled:opacity-50"
+              className="text-xs font-mono uppercase tracking-widest bg-white text-black px-8 py-4 rounded-full hover:bg-neutral-200 transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50"
             >
-              {isPending ? "Creating…" : "New Canvas"}
+              {isPending ? "Initializing..." : "Create New Canvas"}
             </button>
           </div>
         </div>
 
         {/* Right: ChromaGrid */}
-        <div className="absolute bottom-4 right-4 gap-3 overflow-hidden" style={{ left: '38%' }}>
+        <div className="absolute bottom-4 right-4 flex flex-col gap-4 overflow-hidden" style={{ left: '44%' }}>
+          <div className="flex items-center justify-end px-2 self-end w-full max-w-[900px]">
+            <span className="text-4xl font-display font-black text-white tracking-tighter">
+              Recent Work
+            </span>
+          </div>
           <ChromaGrid
             items={chromaItems}
-            radius={280}
+            radius={250}
             damping={0.45}
             onItemClick={(_, i) => {
               const board = cards[i];
@@ -174,29 +177,36 @@ export default function DashboardClient({ initialWhiteboards }: { initialWhitebo
 
       {/* Rename Dialog */}
       <Dialog open={!!renameTarget} onOpenChange={(open) => !open && setRenameTarget(null)}>
-        <DialogContent>
+        <DialogContent className="font-code rounded-none border-2 border-white/10 bg-black/90 backdrop-blur-xl">
           <DialogHeader>
-            <DialogTitle>Rename Canvas</DialogTitle>
+            <DialogTitle className="text-xl font-display font-bold tracking-tight text-white">
+              Rename Artifact
+            </DialogTitle>
           </DialogHeader>
-          <input
-            className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
-            value={renameValue}
-            onChange={(e) => setRenameValue(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && submitRename()}
-            autoFocus
-          />
-          <DialogFooter>
+          <div className="py-4">
+            <label className="text-[10px] text-white/40 font-mono uppercase tracking-[0.2em] mb-2 block">
+              Label identifier
+            </label>
+            <input
+              className="w-full bg-white/5 border border-white/10 rounded-none px-4 py-3 text-sm text-white focus:outline-none focus:border-white/40 transition-colors"
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && submitRename()}
+              autoFocus
+            />
+          </div>
+          <DialogFooter className="gap-2">
             <button
               onClick={() => setRenameTarget(null)}
-              className="text-sm text-neutral-500 hover:text-neutral-700 px-4 py-2"
+              className="text-[10px] font-mono uppercase tracking-widest text-white/40 hover:text-white px-6 py-2 transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={submitRename}
-              className="text-sm font-medium bg-black text-white px-4 py-2 rounded-lg hover:bg-neutral-800 transition-colors"
+              className="text-[10px] font-mono uppercase tracking-widest bg-white text-black px-8 py-2 hover:bg-neutral-200 transition-all"
             >
-              Save
+              Update
             </button>
           </DialogFooter>
         </DialogContent>

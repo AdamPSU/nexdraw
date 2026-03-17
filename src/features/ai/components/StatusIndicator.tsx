@@ -38,8 +38,8 @@ export function StatusIndicator({ status, errorMessage, customMessage }: StatusI
         initial={{ opacity: 0, y: 10, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-        className={`flex items-center gap-2 px-3 py-2 bg-white dark:bg-neutral-900 border rounded-xl shadow-md overflow-hidden relative ${
-          isError ? "border-red-200 dark:border-red-900" : "border-neutral-200 dark:border-neutral-800"
+        className={`flex items-center gap-3 px-4 py-2 bg-white/90 dark:bg-neutral-900/90 border rounded-none shadow-sm overflow-hidden relative backdrop-blur-md ${
+          isError ? "border-red-200 dark:border-red-900/50" : "border-neutral-200 dark:border-neutral-800"
         }`}
       >
         {isGenerating && (
@@ -83,7 +83,7 @@ export function StatusIndicator({ status, errorMessage, customMessage }: StatusI
           )}
 
           {!isGenerating && (
-            <span className={`text-sm font-medium tracking-tight ${
+            <span className={`font-mono text-[10px] uppercase tracking-[0.2em] font-medium ${
               isError ? "text-red-600" : "text-neutral-700 dark:text-neutral-300"
             }`}>
               {message}
