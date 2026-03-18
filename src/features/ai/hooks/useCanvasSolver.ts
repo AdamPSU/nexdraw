@@ -256,7 +256,6 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
       if (!editor) return;
       isUpdatingImageRef.current = true;
       editor.updateShape({ id: shapeId, type: "image", isLocked: false });
-      editor.updateShape({ id: shapeId, type: "image", isLocked: true });
       setPendingImageIds((prev) => prev.filter((id) => id !== shapeId));
       setTimeout(() => { isUpdatingImageRef.current = false; }, 100);
     },
