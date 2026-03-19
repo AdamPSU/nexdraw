@@ -58,7 +58,9 @@ export async function POST(req: NextRequest) {
     // Crop to detected object region
     let crop: [number, number, number, number] | null = null;
     if (imageFile) {
+      const t0 = Date.now();
       const { file: croppedFile, crop: detectedCrop } = await cropImageWithDino(imageFile, prompt);
+      solutionLogger.info({ requestId, ms: Date.now() - t0 }, 'DINO crop');
       imageFile = croppedFile;
       crop = detectedCrop;
       base64Data = Buffer.from(await imageFile.arrayBuffer()).toString('base64');
@@ -108,9 +110,11 @@ export async function POST(req: NextRequest) {
     const imageUrls: string[] = [];
 
     if (imageFile && base64Data) {
+      const t1 = Date.now();
       const buffer = Buffer.from(base64Data, 'base64');
       const blob = new Blob([buffer], { type: mimeType || 'image/jpeg' });
       const url = await fal.storage.upload(blob);
+      solutionLogger.info({ requestId, ms: Date.now() - t1 }, 'fal upload');
       imageUrls.push(url);
     }
 
@@ -128,7 +132,7 @@ export async function POST(req: NextRequest) {
       ? `${artistPrompt}\n\nUSER INPUT: "${actionPrompt}"`
       : artistPrompt;
 
-    const endpoint = "fal-ai/flux-2/klein/9b/base/edit";
+    const endpoint = "fal-ai/nano-banana-2/edit";
     const baseInput = {
       prompt: fullPrompt,
       negative_prompt: negativePrompt.trim(),
@@ -140,7 +144,9 @@ export async function POST(req: NextRequest) {
       : baseInput;
 
     try {
+      const t2 = Date.now();
       const result = await fal.subscribe(endpoint, { input });
+      solutionLogger.info({ requestId, ms: Date.now() - t2 }, 'fal generation');
 
       const falImageUrl = (result.data as any).images?.[0]?.url;
 

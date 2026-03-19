@@ -35,6 +35,8 @@ app = FastAPI(lifespan=lifespan)
 
 def _expand_box(box: list[float], img_w: int, img_h: int) -> tuple[int, int, int, int]:
     x0, y0, x1, y1 = box
+    mx, my = (x1 - x0) * 0.4, (y1 - y0) * 0.4
+    x0, y0, x1, y1 = x0 - mx, y0 - my, x1 + mx, y1 + my
     if (x1 - x0) < MIN_SIDE:
         cx = (x0 + x1) / 2
         x0, x1 = cx - MIN_SIDE / 2, cx + MIN_SIDE / 2
