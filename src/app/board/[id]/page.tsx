@@ -3,21 +3,20 @@
 import {
   Tldraw,
   DefaultColorThemePalette,
+  DefaultToolbar,
+  TldrawUiMenuItem,
+  useTools,
   type TLUiOverrides,
   loadSnapshot,
 } from "tldraw";
 import React, { useState, useEffect, type ReactElement } from "react";
 import "tldraw/tldraw.css";
 import {
-  Cursor02Icon,
   ThreeFinger05Icon,
   PencilIcon,
   EraserIcon,
-  ArrowUpRight01Icon,
   TextIcon,
-  StickyNote01Icon,
   Image01Icon,
-  AddSquareIcon,
   LassoTool01Icon,
 } from "hugeicons-react";
 import { LassoTool } from "@/features/ai/tools/LassoTool";
@@ -35,15 +34,11 @@ const hugeIconsOverrides: TLUiOverrides = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tools(editor: any, tools: Record<string, any>) {
     const toolIconMap: Record<string, ReactElement> = {
-      select: <Cursor02Icon size={22} strokeWidth={1.5} />,
       hand: <ThreeFinger05Icon size={22} strokeWidth={1.5} />,
       draw: <PencilIcon size={22} strokeWidth={1.5} />,
       eraser: <EraserIcon size={22} strokeWidth={1.5} />,
-      arrow: <ArrowUpRight01Icon size={22} strokeWidth={1.5} />,
       text: <TextIcon size={22} strokeWidth={1.5} />,
-      note: <StickyNote01Icon size={22} strokeWidth={1.5} />,
       asset: <Image01Icon size={22} strokeWidth={1.5} />,
-      rectangle: <AddSquareIcon size={22} strokeWidth={1.5} />,
     };
 
     Object.keys(toolIconMap).forEach((id) => {
@@ -62,6 +57,17 @@ const hugeIconsOverrides: TLUiOverrides = {
     return tools;
   },
 };
+
+const VISIBLE_TOOLS = ['hand', 'draw', 'eraser', 'text', 'asset', 'lasso'];
+
+function CustomToolbar() {
+  const tools = useTools();
+  return (
+    <DefaultToolbar>
+      {VISIBLE_TOOLS.map((id) => tools[id] && <TldrawUiMenuItem key={id} {...tools[id]} />)}
+    </DefaultToolbar>
+  );
+}
 
 export default function BoardPage() {
   const params = useParams();
@@ -139,6 +145,7 @@ export default function BoardPage() {
           MenuPanel: null,
           NavigationPanel: null,
           HelperButtons: null,
+          Toolbar: CustomToolbar,
         }}
         onMount={(editor) => {
           if (initialData) {
