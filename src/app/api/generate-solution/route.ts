@@ -121,15 +121,23 @@ export async function POST(req: NextRequest) {
       imageUrls.push(url);
     }
 
-    const artistPrompt = fs.readFileSync(path.join(process.cwd(), 'src', 'features', 'ai', 'prompts', 'artist.txt'), 'utf8');
+    const promptFile = actionPrompt ? 'positive_prompt.txt' : 'artist.txt';
+    const artistPrompt = fs.readFileSync(path.join(process.cwd(), 'src', 'features', 'ai', 'prompts', promptFile), 'utf8');
+    const negativePrompt = fs.readFileSync(path.join(process.cwd(), 'src', 'features', 'ai', 'prompts', 'negative_prompt.txt'), 'utf8');
     const fullPrompt = actionPrompt
       ? `${artistPrompt}\n\nUSER INPUT: "${actionPrompt}"`
       : artistPrompt;
 
     const endpoint = "fal-ai/flux-2/klein/9b/base/edit";
+    const baseInput = {
+      prompt: fullPrompt,
+      negative_prompt: negativePrompt.trim(),
+      output_format: "png" as const,
+      guidance_scale: actionPrompt ? 6 : 3,
+    };
     const input = imageUrls.length > 0
-      ? { prompt: fullPrompt, image_urls: imageUrls, output_format: "png" as const }
-      : { prompt: fullPrompt, output_format: "png" as const };
+      ? { ...baseInput, image_urls: imageUrls }
+      : baseInput;
 
     try {
       const result = await fal.subscribe(endpoint, { input });

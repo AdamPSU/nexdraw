@@ -79,6 +79,7 @@ async def crop(image: UploadFile = File(...), prompt: str = Form(DEFAULT_QUERY))
     cropped.save(buf, format="PNG")
     png_bytes = buf.getvalue()
 
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     (OUTPUT_DIR / f"{ts}.png").write_bytes(png_bytes)
 
