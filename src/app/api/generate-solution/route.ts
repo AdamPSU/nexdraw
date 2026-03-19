@@ -55,9 +55,7 @@ export async function POST(req: NextRequest) {
     // Crop to detected object region
     let crop: [number, number, number, number] | null = null;
     if (imageFile) {
-      const t0 = Date.now();
       const { file: croppedFile, crop: detectedCrop } = await cropImageWithDino(imageFile, prompt);
-      solutionLogger.info({ requestId, ms: Date.now() - t0 }, 'DINO crop');
       imageFile = croppedFile;
       crop = detectedCrop;
       base64Data = Buffer.from(await imageFile.arrayBuffer()).toString('base64');
@@ -116,13 +114,11 @@ export async function POST(req: NextRequest) {
     referenceImages.forEach(img => parts.push({ inlineData: img }));
 
     try {
-      const t2 = Date.now();
       const result = await ai.models.generateContent({
         model: "gemini-3.1-flash-image-preview",
         contents: [{ role: "user", parts }],
         config: { responseModalities: ["IMAGE"] },
       });
-      solutionLogger.info({ requestId, ms: Date.now() - t2 }, 'gemini generation');
 
       const imagePart = result.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData);
       if (!imagePart?.inlineData) throw new Error("Gemini returned no image");
