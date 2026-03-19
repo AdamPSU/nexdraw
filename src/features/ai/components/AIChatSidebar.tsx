@@ -19,9 +19,10 @@ interface AIChatSidebarProps {
   onClose: () => void;
   onSubmit: (prompt: string, images?: File[]) => Promise<{ success: boolean; textContent: string }>;
   status: "idle" | "generating" | "success" | "error";
+  lassoImage?: File | null;
 }
 
-export function AIChatSidebar({ isOpen, onClose, onSubmit, status }: AIChatSidebarProps) {
+export function AIChatSidebar({ isOpen, onClose, onSubmit, status, lassoImage }: AIChatSidebarProps) {
   const [input, setInput] = useState("");
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -176,6 +177,16 @@ export function AIChatSidebar({ isOpen, onClose, onSubmit, status }: AIChatSideb
           </div>
 
           <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 backdrop-blur-sm">
+            {lassoImage && (
+              <div className="px-1 pt-1 pb-3">
+                <img
+                  src={URL.createObjectURL(lassoImage)}
+                  className="w-20 h-20 object-cover rounded-sm border border-neutral-200 dark:border-neutral-700"
+                  alt="canvas region"
+                />
+                <p className="text-[10px] text-neutral-400 mt-1 uppercase tracking-widest">Canvas region</p>
+              </div>
+            )}
             {selectedImages.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-3 px-1">
                 {selectedImages.map((file, i) => (

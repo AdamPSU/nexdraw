@@ -92,6 +92,7 @@ export function BoardContent({
     handleReject,
     cancelGeneration,
     isUpdatingImageRef,
+    lassoState,
   } = useCanvasSolver(isVoiceSessionActive);
 
   const voiceAgent = useVoiceAgent({
@@ -113,6 +114,11 @@ export function BoardContent({
       cancelGeneration();
     }
   }, [isChatOpen, cancelGeneration]);
+
+  // Open sidebar automatically when a lasso region is captured
+  useEffect(() => {
+    if (lassoState) setIsChatOpen(true);
+  }, [lassoState, setIsChatOpen]);
 
   return (
     <>
@@ -228,6 +234,7 @@ export function BoardContent({
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
         status={status}
+        lassoImage={lassoState?.image ?? null}
         onSubmit={async (prompt, images) => {
           return await generateSolution({
             promptOverride: prompt,

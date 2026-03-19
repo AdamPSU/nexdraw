@@ -3,11 +3,13 @@ import {
   useEditor,
   TLShapeId,
   createShapeId,
-  AssetRecordType
+  AssetRecordType,
+  Box,
 } from "tldraw";
 import { logger } from "@/lib/logger";
 import { useDebounceActivity } from "@/features/board/hooks/useDebounceActivity";
 import { StatusIndicatorState } from "@/features/ai/components/StatusIndicator";
+import { registerLassoCallback, unregisterLassoCallback } from "@/features/ai/tools/LassoTool";
 
 export function useCanvasSolver(isVoiceSessionActive: boolean) {
   const editor = useEditor();
@@ -16,6 +18,12 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [statusMessage, setStatusMessage] = useState<string>("");
   const [isAIEnabled, setIsAIEnabled] = useState<boolean>(true);
+
+  const [lassoState, setLassoState] = useState<{
+    shapeId: TLShapeId; expandedBounds: Box; image: File
+  } | null>(null);
+  const lassoStateRef = useRef(lassoState);
+  useEffect(() => { lassoStateRef.current = lassoState; }, [lassoState]);
 
   const isProcessingRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -26,6 +34,25 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
     if (statusType === "success") return "Success!";
     return "";
   }, []);
+
+  useEffect(() => {
+    if (!editor) return;
+    registerLassoCallback(editor.instanceId, async (shapeId) => {
+      const shape = editor.getShape(shapeId);
+      if (!shape) return;
+      const bounds = editor.getShapePageBounds(shape)!;
+      const dx = bounds.w * 0.4, dy = bounds.h * 0.4;
+      const expanded = new Box(bounds.x - dx, bounds.y - dy, bounds.w + dx * 2, bounds.h + dy * 2);
+      const allShapeIds = [...editor.getCurrentPageShapeIds()].filter(id => id !== shapeId);
+      const result = await editor.toImage(allShapeIds, {
+        format: 'png', scale: 1, pixelRatio: 1,
+        bounds: expanded, background: true, padding: 0,
+      });
+      const file = new File([result.blob], 'lasso.png', { type: 'image/png' });
+      setLassoState({ shapeId, expandedBounds: expanded, image: file });
+    });
+    return () => unregisterLassoCallback(editor.instanceId);
+  }, [editor]);
 
   const generateSolution = useCallback(
     async (options?: {
@@ -56,31 +83,33 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
       const signal = abortControllerRef.current.signal;
 
       try {
+        const lasso = lassoStateRef.current;
         const viewportBounds = editor.getViewportPageBounds();
-        const shapesToCapture = [...shapeIds].filter(id => !pendingImageIds.includes(id));
+        const placementOrigin = lasso ? { x: lasso.expandedBounds.x, y: lasso.expandedBounds.y } : { x: viewportBounds.x, y: viewportBounds.y };
 
         let blob: Blob | null = null;
-        if (shapesToCapture.length > 0) {
-          const result = await editor.toImage(shapesToCapture, {
-            format: "png",
-            scale: 1,
-            pixelRatio: 1,
-            bounds: viewportBounds,
-            background: true,
-            padding: 0,
-          });
-          blob = result.blob;
-        }
-
-        if (shapesToCapture.length > 0 && !blob) {
-          isProcessingRef.current = false;
-          return { success: false, textContent: "" };
+        if (lasso) {
+          blob = lasso.image;
+        } else {
+          const shapesToCapture = [...shapeIds].filter(id => !pendingImageIds.includes(id));
+          if (shapesToCapture.length > 0) {
+            const result = await editor.toImage(shapesToCapture, {
+              format: "png", scale: 1, pixelRatio: 1,
+              bounds: viewportBounds, background: true, padding: 0,
+            });
+            blob = result.blob;
+          }
+          if (shapesToCapture.length > 0 && !blob) {
+            isProcessingRef.current = false;
+            return { success: false, textContent: "" };
+          }
         }
 
         if (signal.aborted) return { success: false, textContent: "" };
 
         const formData = new FormData();
         if (blob) formData.append("image", blob, "canvas.png");
+        if (lasso) formData.append("skipCrop", "true");
         if (options?.promptOverride) formData.append("prompt", options.promptOverride);
         if (options?.images && options.images.length > 0) {
           options.images.forEach((file, index) => {
@@ -159,10 +188,10 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
 
         const shapeId = createShapeId();
         const crop = solutionData.crop as [number, number, number, number] | null;
-        const x = viewportBounds.x + (crop ? crop[0] : 0);
-        const y = viewportBounds.y + (crop ? crop[1] : 0);
-        const w = crop ? crop[2] - crop[0] : img.width;
-        const h = crop ? crop[3] - crop[1] : img.height;
+        const x = placementOrigin.x + (crop ? crop[0] : 0);
+        const y = placementOrigin.y + (crop ? crop[1] : 0);
+        const w = lasso ? lasso.expandedBounds.w : crop ? crop[2] - crop[0] : img.width;
+        const h = lasso ? lasso.expandedBounds.h : crop ? crop[3] - crop[1] : img.height;
 
         editor.createShape({
           id: shapeId,
@@ -174,6 +203,7 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
         });
 
         setPendingImageIds((prev) => [...prev, shapeId]);
+        if (lasso) setLassoState(null);
 
         setStatus("success");
         setStatusMessage(getStatusMessage("success"));
@@ -215,8 +245,10 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
 
   const handleAutoGeneration = useCallback(() => {
     if (!isAIEnabled) return;
+    if (editor?.getCurrentToolId() === 'lasso') return;
+    if (lassoStateRef.current) return;
     void generateSolution({ source: "auto" });
-  }, [generateSolution, isAIEnabled]);
+  }, [generateSolution, isAIEnabled, editor]);
 
   useDebounceActivity(handleAutoGeneration, 100, editor, isUpdatingImageRef, isProcessingRef);
 
@@ -246,7 +278,9 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
     (shapeId: TLShapeId) => {
       if (!editor) return;
       isUpdatingImageRef.current = true;
+      const lassoShapeId = lassoStateRef.current?.shapeId;
       editor.updateShape({ id: shapeId, type: "image", isLocked: false });
+      if (lassoShapeId) editor.deleteShape(lassoShapeId);
       setPendingImageIds((prev) => prev.filter((id) => id !== shapeId));
       setTimeout(() => { isUpdatingImageRef.current = false; }, 100);
     },
@@ -257,8 +291,10 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
     (shapeId: TLShapeId) => {
       if (!editor) return;
       isUpdatingImageRef.current = true;
+      const lassoShapeId = lassoStateRef.current?.shapeId;
       editor.updateShape({ id: shapeId, type: "image", isLocked: false });
       editor.deleteShape(shapeId);
+      if (lassoShapeId) editor.deleteShape(lassoShapeId);
       setPendingImageIds((prev) => prev.filter((id) => id !== shapeId));
       setTimeout(() => { isUpdatingImageRef.current = false; }, 100);
     },
@@ -287,5 +323,6 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
     handleReject,
     cancelGeneration,
     isUpdatingImageRef,
+    lassoState,
   };
 }

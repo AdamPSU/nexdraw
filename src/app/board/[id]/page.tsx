@@ -18,7 +18,9 @@ import {
   StickyNote01Icon,
   Image01Icon,
   AddSquareIcon,
+  LassoTool01Icon,
 } from "hugeicons-react";
+import { LassoTool } from "@/features/ai/tools/LassoTool";
 import { supabase } from "@/lib/supabase";
 import { useParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
@@ -31,7 +33,7 @@ DefaultColorThemePalette.darkMode.background = "#FFFFFF";
 
 const hugeIconsOverrides: TLUiOverrides = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tools(_editor: unknown, tools: Record<string, any>) {
+  tools(editor: any, tools: Record<string, any>) {
     const toolIconMap: Record<string, ReactElement> = {
       select: <Cursor02Icon size={22} strokeWidth={1.5} />,
       hand: <ThreeFinger05Icon size={22} strokeWidth={1.5} />,
@@ -47,6 +49,15 @@ const hugeIconsOverrides: TLUiOverrides = {
     Object.keys(toolIconMap).forEach((id) => {
       if (tools[id]) tools[id].icon = toolIconMap[id];
     });
+
+    tools.lasso = {
+      id: 'lasso',
+      label: 'Lasso',
+      icon: <LassoTool01Icon size={22} strokeWidth={1.5} />,
+      kbd: 'l',
+      readonlyOk: false,
+      onSelect() { editor.setCurrentTool('lasso'); },
+    };
 
     return tools;
   },
@@ -122,6 +133,7 @@ export default function BoardPage() {
       }}
     >
       <Tldraw
+        tools={[LassoTool]}
         overrides={hugeIconsOverrides}
         components={{
           MenuPanel: null,

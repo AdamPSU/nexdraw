@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     let imageFile = formData.get('image') as File | null;
     const prompt = formData.get('prompt') as string | null;
     const source = formData.get('source') as string | null;
+    const skipCrop = formData.get('skipCrop') === 'true';
 
     // Collect reference images
     const referenceImages: { data: string; mimeType: string }[] = [];
@@ -52,9 +53,9 @@ export async function POST(req: NextRequest) {
       mimeType = imageFile.type || 'image/jpeg';
     }
 
-    // Crop to detected object region
+    // Crop to detected object region (skip when lasso provides explicit bounds)
     let crop: [number, number, number, number] | null = null;
-    if (imageFile) {
+    if (imageFile && !skipCrop) {
       const { file: croppedFile, crop: detectedCrop } = await cropImageWithDino(imageFile, prompt);
       imageFile = croppedFile;
       crop = detectedCrop;
