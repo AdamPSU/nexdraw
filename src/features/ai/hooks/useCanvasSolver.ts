@@ -25,9 +25,11 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
   const lassoStateRef = useRef(lassoState);
   useEffect(() => { lassoStateRef.current = lassoState; }, [lassoState]);
 
+  const isLassoPendingRef = useRef(false);
   const isProcessingRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const isUpdatingImageRef = useRef(false);
+  const statusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const getStatusMessage = useCallback((statusType: "generating" | "success") => {
     if (statusType === "generating") return "Thinking...";
@@ -38,8 +40,9 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
   useEffect(() => {
     if (!editor) return;
     registerLassoCallback(editor.instanceId, async (shapeId) => {
+      isLassoPendingRef.current = true;
       const shape = editor.getShape(shapeId);
-      if (!shape) return;
+      if (!shape) { isLassoPendingRef.current = false; return; }
       const bounds = editor.getShapePageBounds(shape)!;
       const dx = bounds.w * 0.4, dy = bounds.h * 0.4;
       const expanded = new Box(bounds.x - dx, bounds.y - dy, bounds.w + dx * 2, bounds.h + dy * 2);
@@ -50,6 +53,7 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
       });
       const file = new File([result.blob], 'lasso.png', { type: 'image/png' });
       setLassoState({ shapeId, expandedBounds: expanded, image: file });
+      isLassoPendingRef.current = false;
     });
     return () => unregisterLassoCallback(editor.instanceId);
   }, [editor]);
@@ -118,8 +122,15 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
         }
         formData.append("source", options?.source ?? "auto");
 
-        setStatus("generating");
-        setStatusMessage(getStatusMessage("generating"));
+        if (options?.source === "auto") {
+          statusTimerRef.current = setTimeout(() => {
+            setStatus("generating");
+            setStatusMessage(getStatusMessage("generating"));
+          }, 2000);
+        } else {
+          setStatus("generating");
+          setStatusMessage(getStatusMessage("generating"));
+        }
 
         const solutionResponse = await fetch('/api/generate-solution', {
           method: 'POST',
@@ -236,6 +247,10 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
 
         return { success: false, textContent: "" };
       } finally {
+        if (statusTimerRef.current) {
+          clearTimeout(statusTimerRef.current);
+          statusTimerRef.current = null;
+        }
         isProcessingRef.current = false;
         abortControllerRef.current = null;
       }
@@ -246,6 +261,7 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
   const handleAutoGeneration = useCallback(() => {
     if (!isAIEnabled) return;
     if (editor?.getCurrentToolId() === 'lasso') return;
+    if (isLassoPendingRef.current) return;
     if (lassoStateRef.current) return;
     void generateSolution({ source: "auto" });
   }, [generateSolution, isAIEnabled, editor]);
