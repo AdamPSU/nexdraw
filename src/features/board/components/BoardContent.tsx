@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { TLShapeId, useEditor } from "tldraw";
 import { Button } from "@/components/ui/button";
 import {
@@ -87,6 +87,7 @@ export function BoardContent({ id }: { id: string }) {
     handleAccept,
     handleReject,
     cancelGeneration,
+    clearLassoShape,
     isUpdatingImageRef,
     lassoState,
   } = useCanvasSolver(isVoiceSessionActive);
@@ -111,6 +112,15 @@ export function BoardContent({ id }: { id: string }) {
       cancelGeneration();
     }
   }, [isChatOpen, cancelGeneration]);
+
+  // Delete lasso box when sidebar is closed while a lasso region is active
+  const prevChatOpen = useRef(isChatOpen);
+  useEffect(() => {
+    if (prevChatOpen.current && !isChatOpen) {
+      clearLassoShape();
+    }
+    prevChatOpen.current = isChatOpen;
+  }, [isChatOpen, clearLassoShape]);
 
   // Open sidebar automatically when a lasso region is captured
   useEffect(() => {

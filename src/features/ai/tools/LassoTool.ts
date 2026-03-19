@@ -26,6 +26,7 @@ export class LassoTool extends StateNode {
       id: this.shapeId, type: 'geo',
       x: this.originX, y: this.originY,
       props: { geo: 'rectangle', w: 1, h: 1, fill: 'none', dash: 'dashed', color: 'blue' },
+      meta: { isLasso: true },
     })
   }
 

@@ -24,7 +24,7 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
 
   // — Lasso State —
   const [lassoState, setLassoState] = useState<{
-    shapeId: TLShapeId; expandedBounds: Box; image: File
+    shapeId: TLShapeId; expandedBounds: Box; image: File | null
   } | null>(null);
   const lassoStateRef = useRef(lassoState);
   useEffect(() => { lassoStateRef.current = lassoState; }, [lassoState]);
@@ -55,12 +55,24 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
       const dx = bounds.w * CANVAS_MARGIN_RATIO, dy = bounds.h * CANVAS_MARGIN_RATIO;
       const expanded = new Box(bounds.x - dx, bounds.y - dy, bounds.w + dx * 2, bounds.h + dy * 2);
       const allShapeIds = [...editor.getCurrentPageShapeIds()].filter(id => id !== shapeId);
-      const result = await editor.toImage(allShapeIds, {
-        format: 'png', scale: 1, pixelRatio: 1,
-        bounds: expanded, background: true, padding: 0,
-      });
-      const file = new File([result.blob], 'lasso.png', { type: 'image/png' });
-      setLassoState({ shapeId, expandedBounds: expanded, image: file });
+      let image: File | null = null;
+      if (allShapeIds.length > 0) {
+        const result = await editor.toImage(allShapeIds, {
+          format: 'png', scale: 1, pixelRatio: 1,
+          bounds: expanded, background: true, padding: 0,
+        });
+        image = new File([result.blob], 'lasso.png', { type: 'image/png' });
+      } else {
+        const w = Math.max(1, Math.round(expanded.w));
+        const h = Math.max(1, Math.round(expanded.h));
+        const cvs = document.createElement('canvas');
+        cvs.width = w; cvs.height = h;
+        cvs.getContext('2d')!.fillStyle = '#ffffff';
+        cvs.getContext('2d')!.fillRect(0, 0, w, h);
+        const blob = await new Promise<Blob>(resolve => cvs.toBlob(b => resolve(b!), 'image/png'));
+        image = new File([blob], 'lasso.png', { type: 'image/png' });
+      }
+      setLassoState({ shapeId, expandedBounds: expanded, image });
       isLassoPendingRef.current = false;
     });
     return () => unregisterLassoCallback(editorId);
@@ -245,15 +257,8 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
         }
 
         logger.error(error, 'Auto-generation error');
-        setErrorMessage(error instanceof Error ? error.message : 'Generation failed');
-        setStatus("error");
+        setStatus("idle");
         setStatusMessage("");
-
-        setTimeout(() => {
-          setStatus("idle");
-          setErrorMessage("");
-        }, 3000);
-
         return { success: false, textContent: "" };
       } finally {
         if (statusTimerRef.current) {
@@ -338,6 +343,14 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
     }
   }, []);
 
+  const clearLassoShape = useCallback(() => {
+    if (!editor || !lassoStateRef.current) return;
+    isUpdatingImageRef.current = true;
+    editor.deleteShape(lassoStateRef.current.shapeId);
+    setLassoState(null);
+    setTimeout(() => { isUpdatingImageRef.current = false; }, 100);
+  }, [editor]);
+
   return {
     pendingImageIds,
     status,
@@ -349,6 +362,7 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
     handleAccept,
     handleReject,
     cancelGeneration,
+    clearLassoShape,
     isUpdatingImageRef,
     lassoState,
   };

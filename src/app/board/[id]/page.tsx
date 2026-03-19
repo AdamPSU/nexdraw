@@ -150,6 +150,11 @@ function BoardPageContent() {
               logger.error(e, "Failed to load snapshot");
             }
           }
+          // Remove any lasso shapes persisted from a previous session
+          const lassoIds = [...editor.getCurrentPageShapeIds()].filter(
+            (id) => editor.getShape(id)?.meta?.isLasso
+          );
+          if (lassoIds.length > 0) editor.deleteShapes(lassoIds);
         }}
       >
         <BoardContent id={id} />
