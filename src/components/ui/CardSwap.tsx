@@ -174,7 +174,7 @@ export default function CardSwap({
 
   const rendered = childArr.map((child, i) =>
     isValidElement(child)
-      ? cloneElement(child as React.ReactElement<CardProps>, {
+      ? cloneElement(child as React.ReactElement<CardProps & React.RefAttributes<HTMLDivElement>>, {
           key: i,
           ref: refs[i],
           style: { width, height, ...(child.props as CardProps).style },
