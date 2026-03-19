@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
     }
 
     // --- STAGE 2: IMAGE GENERATION (Gemini nano-banana-2) ---
-    const promptFile = actionPrompt ? 'positive_prompt.txt' : 'artist.txt';
+    const promptFile = 'positive_prompt.txt';
     const artistPrompt = fs.readFileSync(path.join(process.cwd(), 'src', 'features', 'ai', 'prompts', promptFile), 'utf8');
     const negativePrompt = fs.readFileSync(path.join(process.cwd(), 'src', 'features', 'ai', 'prompts', 'negative_prompt.txt'), 'utf8');
     const fullPrompt = actionPrompt
