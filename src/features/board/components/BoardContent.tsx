@@ -20,7 +20,9 @@ import { useLayers } from "@/features/board/hooks/useLayers";
 import { LayersPanel } from "@/features/board/components/LayersPanel";
 import { StatusIndicator } from "@/features/ai/components/StatusIndicator";
 import { AIChatSidebar } from "@/features/ai/components/AIChatSidebar";
+import { useBoardContext } from "@/features/board/context/BoardContext";
 import { cn } from "@/lib/utils";
+import { BOARD_Z_INDEX } from "@/lib/constants";
 
 function ImageActionButtons({
   pendingImageIds,
@@ -43,7 +45,7 @@ function ImageActionButtons({
         bottom: '72px',
         left: '50%',
         transform: 'translateX(-50%)',
-        zIndex: 1000,
+        zIndex: BOARD_Z_INDEX.overlay,
         display: 'flex',
         gap: '8px',
       }}
@@ -68,15 +70,8 @@ function ImageActionButtons({
   );
 }
 
-export function BoardContent({
-  id,
-  isChatOpen,
-  setIsChatOpen
-}: {
-  id: string;
-  isChatOpen: boolean;
-  setIsChatOpen: (open: boolean) => void;
-}) {
+export function BoardContent({ id }: { id: string }) {
+  const { isChatOpen, setIsChatOpen } = useBoardContext();
   const [isVoiceSessionActive, setIsVoiceSessionActive] = useState(false);
 
   const editor = useEditor();
@@ -130,7 +125,7 @@ export function BoardContent({
             position: 'absolute',
             top: '16px',
             left: '16px',
-            zIndex: 1000,
+            zIndex: BOARD_Z_INDEX.overlay,
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
@@ -162,7 +157,7 @@ export function BoardContent({
           bottom: '72px',
           left: '50%',
           transform: 'translateX(-50%)',
-          zIndex: 1000,
+          zIndex: BOARD_Z_INDEX.overlay,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -192,7 +187,7 @@ export function BoardContent({
           position: 'absolute',
           bottom: '12px',
           left: 'calc(50% - 236px)',
-          zIndex: 1000,
+          zIndex: BOARD_Z_INDEX.overlay,
           display: 'flex',
           gap: '8px',
         }}
@@ -232,7 +227,6 @@ export function BoardContent({
       </div>
 
       <AIChatSidebar
-        isOpen={isChatOpen}
         status={status}
         lassoImage={lassoState?.image ?? null}
         onSubmit={async (prompt, images) => {

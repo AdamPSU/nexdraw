@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { logger } from '@/lib/logger';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -10,9 +11,7 @@ const isConfigured =
   supabaseAnonKey !== 'placeholder-key';
 
 if (!isConfigured && typeof window !== 'undefined') {
-  console.warn(
-    '⚠️ Supabase is not configured. The UI will load, but database features (saving/loading) will not work.'
-  );
+  logger.warn('Supabase is not configured. The UI will load, but database features (saving/loading) will not work.');
 }
 
 export const supabase = isConfigured

@@ -9,22 +9,17 @@ import {
   type TLUiOverrides,
   loadSnapshot,
 } from "tldraw";
-import React, { useState, useEffect, type ReactElement } from "react";
+import { useState, useEffect } from "react";
 import "tldraw/tldraw.css";
-import {
-  ThreeFinger05Icon,
-  PencilIcon,
-  EraserIcon,
-  TextIcon,
-  Image01Icon,
-  LassoTool01Icon,
-} from "hugeicons-react";
 import { LassoTool } from "@/features/ai/tools/LassoTool";
 import { supabase } from "@/lib/supabase";
 import { useParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { BoardContent } from "@/features/board/components/BoardContent";
+import { BoardProvider, useBoardContext } from "@/features/board/context/BoardContext";
+import { TOOL_ICON_MAP } from "@/lib/constants";
+import { logger } from "@/lib/logger";
 
 // Ensure the tldraw canvas background is pure white in both light and dark modes
 DefaultColorThemePalette.lightMode.background = "#FFFFFF";
@@ -33,22 +28,14 @@ DefaultColorThemePalette.darkMode.background = "#FFFFFF";
 const hugeIconsOverrides: TLUiOverrides = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tools(editor: any, tools: Record<string, any>) {
-    const toolIconMap: Record<string, ReactElement> = {
-      hand: <ThreeFinger05Icon size={22} strokeWidth={1.5} />,
-      draw: <PencilIcon size={22} strokeWidth={1.5} />,
-      eraser: <EraserIcon size={22} strokeWidth={1.5} />,
-      text: <TextIcon size={22} strokeWidth={1.5} />,
-      asset: <Image01Icon size={22} strokeWidth={1.5} />,
-    };
-
-    Object.keys(toolIconMap).forEach((id) => {
-      if (tools[id]) tools[id].icon = toolIconMap[id];
+    Object.keys(TOOL_ICON_MAP).forEach((id) => {
+      if (tools[id]) tools[id].icon = TOOL_ICON_MAP[id];
     });
 
     tools.lasso = {
       id: 'lasso',
       label: 'Lasso',
-      icon: <LassoTool01Icon size={22} strokeWidth={1.5} />,
+      icon: TOOL_ICON_MAP.lasso,
       kbd: 'l',
       readonlyOk: false,
       onSelect() { editor.setCurrentTool('lasso'); },
@@ -70,22 +57,30 @@ function CustomToolbar() {
 }
 
 export default function BoardPage() {
+  return (
+    <BoardProvider>
+      <BoardPageContent />
+    </BoardProvider>
+  );
+}
+
+function BoardPageContent() {
   const params = useParams();
   const id = params.id as string;
   const [loading, setLoading] = useState(true);
   const [initialData, setInitialData] = useState<any>(null);
-  const [isChatOpen, setIsChatOpen] = useState(false);
+  const { isChatOpen, setIsChatOpen } = useBoardContext();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "l") {
         e.preventDefault();
-        setIsChatOpen((prev) => !prev);
+        setIsChatOpen(!isChatOpen);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [isChatOpen, setIsChatOpen]);
 
   useEffect(() => {
     async function loadBoard() {
@@ -102,7 +97,7 @@ export default function BoardPage() {
           setInitialData(data.data);
         }
       } catch (e) {
-        console.error("Error loading board:", e);
+        logger.error(e, "Error loading board");
         toast.error("Failed to load board");
       } finally {
         setLoading(false);
@@ -130,9 +125,9 @@ export default function BoardPage() {
   }
 
   return (
-    <div 
-      style={{ 
-        position: "fixed", 
+    <div
+      style={{
+        position: "fixed",
         inset: 0,
         paddingLeft: isChatOpen ? '350px' : '0px',
         transition: 'padding-left 0.3s ease-in-out'
@@ -152,12 +147,12 @@ export default function BoardPage() {
             try {
               loadSnapshot(editor.store, initialData);
             } catch (e) {
-              console.error("Failed to load snapshot:", e);
+              logger.error(e, "Failed to load snapshot");
             }
           }
         }}
       >
-        <BoardContent id={id} isChatOpen={isChatOpen} setIsChatOpen={setIsChatOpen} />
+        <BoardContent id={id} />
       </Tldraw>
     </div>
   );

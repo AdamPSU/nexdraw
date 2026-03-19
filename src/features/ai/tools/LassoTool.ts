@@ -41,7 +41,8 @@ export class LassoTool extends StateNode {
 
   override onPointerUp() {
     if (!this.shapeId) return
-    _callbacks.get(this.editor.instanceId)?.(this.shapeId)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    _callbacks.get((this.editor as any).instanceId as string)?.(this.shapeId)
     this.shapeId = null
     this.editor.setCurrentTool('select')
   }

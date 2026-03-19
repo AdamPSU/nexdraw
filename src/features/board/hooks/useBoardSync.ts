@@ -2,6 +2,7 @@ import { useEffect, RefObject } from "react";
 import { useEditor, getSnapshot } from "tldraw";
 import { logger } from "@/lib/logger";
 import { supabase } from "@/lib/supabase";
+import { MAX_PREVIEW_LENGTH } from "@/lib/constants";
 
 export function useBoardSync(id: string, isUpdatingImageRef: RefObject<boolean>) {
   const editor = useEditor();
@@ -65,7 +66,6 @@ export function useBoardSync(id: string, isUpdatingImageRef: RefObject<boolean>)
           };
 
           if (previewUrl) {
-            const MAX_PREVIEW_LENGTH = 8000;
             if (previewUrl.length <= MAX_PREVIEW_LENGTH) {
               updateData.preview = previewUrl;
             }

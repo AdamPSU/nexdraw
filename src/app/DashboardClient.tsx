@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { DASHBOARD_PALETTES } from "@/lib/constants";
 
 type Whiteboard = {
   id: string;
@@ -66,15 +67,6 @@ export default function DashboardClient({ initialWhiteboards }: { initialWhitebo
     });
   };
 
-  const PALETTES = [
-    { borderColor: 'rgba(139,92,246,0.7)',  gradient: 'linear-gradient(145deg,rgba(109,40,217,0.45),rgba(5,5,15,0.85))' },
-    { borderColor: 'rgba(192,38,211,0.7)',  gradient: 'linear-gradient(210deg,rgba(162,28,175,0.45),rgba(5,5,15,0.85))' },
-    { borderColor: 'rgba(37,99,235,0.7)',   gradient: 'linear-gradient(165deg,rgba(29,78,216,0.45),rgba(5,5,15,0.85))' },
-    { borderColor: 'rgba(79,70,229,0.7)',   gradient: 'linear-gradient(195deg,rgba(67,56,202,0.45),rgba(5,5,15,0.85))' },
-    { borderColor: 'rgba(14,165,233,0.7)',  gradient: 'linear-gradient(225deg,rgba(2,132,199,0.45),rgba(5,5,15,0.85))' },
-    { borderColor: 'rgba(124,58,237,0.7)',  gradient: 'linear-gradient(180deg,rgba(109,40,217,0.45),rgba(5,5,15,0.85))' },
-  ];
-
   const cards = optimisticWhiteboards.length > 0
     ? optimisticWhiteboards.slice(0, 12)
     : Array.from({ length: 12 }, (_, i) => ({ id: `placeholder-${i}`, title: "Untitled Canvas", created_at: "", updated_at: "", preview: undefined }));
@@ -83,7 +75,7 @@ export default function DashboardClient({ initialWhiteboards }: { initialWhitebo
     image: board.preview ?? '',
     title: board.title,
     subtitle: board.updated_at ? formatTime(board.updated_at) : 'New Canvas',
-    ...PALETTES[i % PALETTES.length],
+    ...DASHBOARD_PALETTES[i % DASHBOARD_PALETTES.length],
   }));
 
   return (

@@ -10,21 +10,26 @@ import { logger } from "@/lib/logger";
 import { useDebounceActivity } from "@/features/board/hooks/useDebounceActivity";
 import { StatusIndicatorState } from "@/features/ai/components/StatusIndicator";
 import { registerLassoCallback, unregisterLassoCallback } from "@/features/ai/tools/LassoTool";
+import { CANVAS_MARGIN_RATIO } from "@/lib/constants";
 
 export function useCanvasSolver(isVoiceSessionActive: boolean) {
   const editor = useEditor();
+
+  // — State —
   const [pendingImageIds, setPendingImageIds] = useState<TLShapeId[]>([]);
   const [status, setStatus] = useState<StatusIndicatorState>("idle");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [statusMessage, setStatusMessage] = useState<string>("");
   const [isAIEnabled, setIsAIEnabled] = useState<boolean>(true);
 
+  // — Lasso State —
   const [lassoState, setLassoState] = useState<{
     shapeId: TLShapeId; expandedBounds: Box; image: File
   } | null>(null);
   const lassoStateRef = useRef(lassoState);
   useEffect(() => { lassoStateRef.current = lassoState; }, [lassoState]);
 
+  // — Refs —
   const isLassoPendingRef = useRef(false);
   const isProcessingRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -37,14 +42,17 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
     return "";
   }, []);
 
+  // — Lasso Registration —
   useEffect(() => {
     if (!editor) return;
-    registerLassoCallback(editor.instanceId, async (shapeId) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const editorId = (editor as any).instanceId as string;
+    registerLassoCallback(editorId, async (shapeId) => {
       isLassoPendingRef.current = true;
       const shape = editor.getShape(shapeId);
       if (!shape) { isLassoPendingRef.current = false; return; }
       const bounds = editor.getShapePageBounds(shape)!;
-      const dx = bounds.w * 0.4, dy = bounds.h * 0.4;
+      const dx = bounds.w * CANVAS_MARGIN_RATIO, dy = bounds.h * CANVAS_MARGIN_RATIO;
       const expanded = new Box(bounds.x - dx, bounds.y - dy, bounds.w + dx * 2, bounds.h + dy * 2);
       const allShapeIds = [...editor.getCurrentPageShapeIds()].filter(id => id !== shapeId);
       const result = await editor.toImage(allShapeIds, {
@@ -55,9 +63,10 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
       setLassoState({ shapeId, expandedBounds: expanded, image: file });
       isLassoPendingRef.current = false;
     });
-    return () => unregisterLassoCallback(editor.instanceId);
+    return () => unregisterLassoCallback(editorId);
   }, [editor]);
 
+  // — Image Generation —
   const generateSolution = useCallback(
     async (options?: {
       promptOverride?: string;
@@ -258,6 +267,7 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
     [editor, pendingImageIds, isVoiceSessionActive, getStatusMessage, isAIEnabled],
   );
 
+  // — Auto Generation —
   const handleAutoGeneration = useCallback(() => {
     if (!isAIEnabled) return;
     if (editor?.getCurrentToolId() === 'lasso') return;
@@ -290,6 +300,7 @@ export function useCanvasSolver(isVoiceSessionActive: boolean) {
     return () => dispose();
   }, [editor]);
 
+  // — Accept / Reject —
   const handleAccept = useCallback(
     (shapeId: TLShapeId) => {
       if (!editor) return;

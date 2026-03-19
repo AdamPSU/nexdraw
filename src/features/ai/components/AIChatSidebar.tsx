@@ -6,6 +6,7 @@ import { X, Send, Sparkles, Loader2, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useBoardContext } from "@/features/board/context/BoardContext";
 
 interface Message {
   id: string;
@@ -15,13 +16,13 @@ interface Message {
 }
 
 interface AIChatSidebarProps {
-  isOpen: boolean;
   onSubmit: (prompt: string, images?: File[]) => Promise<{ success: boolean; textContent: string }>;
   status: "idle" | "generating" | "success" | "error";
   lassoImage?: File | null;
 }
 
-export function AIChatSidebar({ isOpen, onSubmit, status, lassoImage }: AIChatSidebarProps) {
+export function AIChatSidebar({ onSubmit, status, lassoImage }: AIChatSidebarProps) {
+  const { isChatOpen: isOpen } = useBoardContext();
   const [input, setInput] = useState("");
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
