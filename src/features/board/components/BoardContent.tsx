@@ -16,6 +16,8 @@ import {
 import { useVoiceAgent } from "@/features/voice/hooks/useVoiceAgent";
 import { useCanvasSolver } from "@/features/ai/hooks/useCanvasSolver";
 import { useBoardSync } from "@/features/board/hooks/useBoardSync";
+import { useLayers } from "@/features/board/hooks/useLayers";
+import { LayersPanel } from "@/features/board/components/LayersPanel";
 import { StatusIndicator } from "@/features/ai/components/StatusIndicator";
 import { AIChatSidebar } from "@/features/ai/components/AIChatSidebar";
 import { cn } from "@/lib/utils";
@@ -106,6 +108,7 @@ export function BoardContent({
   });
 
   useBoardSync(id, isUpdatingImageRef);
+  const { layers, activeLayerId, setActiveLayerId, addLayer, deleteLayer, renameLayer, toggleVisibility, toggleLock, reorderLayers } = useLayers(editor);
 
   // Cancel any ongoing AI generation when the chat sidebar is opened
   useEffect(() => {
@@ -247,6 +250,18 @@ export function BoardContent({
         isVoiceSessionActive={isVoiceSessionActive}
         onAccept={handleAccept}
         onReject={handleReject}
+      />
+
+      <LayersPanel
+        layers={layers}
+        activeLayerId={activeLayerId}
+        onSetActive={setActiveLayerId}
+        onAdd={addLayer}
+        onDelete={deleteLayer}
+        onRename={renameLayer}
+        onToggleVisibility={toggleVisibility}
+        onToggleLock={toggleLock}
+        onReorder={reorderLayers}
       />
     </>
   );

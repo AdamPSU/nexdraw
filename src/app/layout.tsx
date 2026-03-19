@@ -20,8 +20,8 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Infinite Canvas",
-  description: "Collaborative whiteboard powered by AI",
+  title: "Maestro",
+  description: "Your AI-powered artist assistant",
 };
 
 export default function RootLayout({

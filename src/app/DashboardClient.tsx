@@ -119,7 +119,7 @@ export default function DashboardClient({ initialWhiteboards }: { initialWhitebo
           <div className="flex items-center gap-3 group cursor-pointer">
             <div className="w-5 h-5 bg-white rounded-sm rotate-45 group-hover:rotate-90 transition-transform duration-500" />
             <div className="flex flex-col">
-              <span className="text-sm font-display font-bold tracking-tighter text-white leading-none">NEXHACKS</span>
+              <span className="text-sm font-display font-bold tracking-tighter text-white leading-none">MAESTRO</span>
             </div>
           </div>
           
@@ -169,14 +169,14 @@ export default function DashboardClient({ initialWhiteboards }: { initialWhitebo
         {/* Left: hero text */}
         <div className="flex flex-col pt-0 pb-12 h-full gap-10">
           <div className="flex flex-col gap-4">
-            <h1 className="text-hero text-white">
-              The AI-powered <br/>
+            <h1 className="text-hero text-white overflow-hidden pb-[0.08em]">
+              Your AI-powered <br/>
               <LineShadowText className="text-white italic" shadowColor="white">
-                canvas.
+                art coach.
               </LineShadowText>
             </h1>
             <p className="text-sm text-body-code text-white/70 max-w-sm">
-              Sketch, brainstorm, and build with an AI copilot that understands your spatial intent in real-time.
+              Draw, design, and grow with an AI maestro that brings your creative vision to life.
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -190,7 +190,7 @@ export default function DashboardClient({ initialWhiteboards }: { initialWhitebo
               className="text-xs font-mono uppercase tracking-widest text-black px-12 py-5 transform transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 border-none shadow-2xl"
             >
               <span className="relative z-10">
-                {isPending ? "Initializing..." : "Create New Artifact"}
+                {isPending ? "Initializing..." : "Create New Canvas"}
               </span>
             </ShimmerButton>
           </div>
@@ -228,7 +228,7 @@ export default function DashboardClient({ initialWhiteboards }: { initialWhitebo
         <DialogContent className="font-code rounded-none border-2 border-white/10 bg-black/90 backdrop-blur-xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-display font-bold tracking-tight text-white">
-              Rename Artifact
+              Rename Canvas
             </DialogTitle>
           </DialogHeader>
           <div className="py-4">
