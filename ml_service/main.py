@@ -1,8 +1,5 @@
 from contextlib import asynccontextmanager
-from datetime import datetime
 from io import BytesIO
-from pathlib import Path
-
 import base64
 
 import torch
@@ -14,7 +11,6 @@ from transformers import AutoModelForZeroShotObjectDetection, AutoProcessor
 MODEL_ID = "IDEA-Research/grounding-dino-base"
 DEFAULT_QUERY = "object . drawing . shape"
 MIN_SIDE = 512
-OUTPUT_DIR = Path(__file__).parent.parent / "test" / "image_outputs"
 
 _processor = None
 _model = None
@@ -23,7 +19,6 @@ _model = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global _processor, _model
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     _processor = AutoProcessor.from_pretrained(MODEL_ID)
     _model = AutoModelForZeroShotObjectDetection.from_pretrained(MODEL_ID).to("cuda")
     _model.eval()
@@ -65,8 +60,6 @@ async def crop(image: UploadFile = File(...), prompt: str = Form(DEFAULT_QUERY))
     )[0]
 
     if len(results["scores"]) == 0:
-        ts = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-        (OUTPUT_DIR / f"{ts}_no_detection.png").write_bytes(raw)
         return JSONResponse({
             "image": base64.b64encode(raw).decode(),
             "crop": [0, 0, pil_img.width, pil_img.height],
@@ -80,10 +73,6 @@ async def crop(image: UploadFile = File(...), prompt: str = Form(DEFAULT_QUERY))
     buf = BytesIO()
     cropped.save(buf, format="PNG")
     png_bytes = buf.getvalue()
-
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-    (OUTPUT_DIR / f"{ts}.png").write_bytes(png_bytes)
 
     return JSONResponse({
         "image": base64.b64encode(png_bytes).decode(),
